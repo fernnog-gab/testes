@@ -1,0 +1,700 @@
+/* ================================================
+   JURIS CORE CSS
+   Estrutura, Variáveis Globais, Reset e UI Base
+   ================================================ */
+
+/* ================================================
+   1. VARIÁVEIS, Z-INDEX CENTRALIZADO E RESET
+   ================================================ */
+:root {
+    /* Design Tokens Bases */
+    --theme-bg-jasmine: #FFD580;
+    --theme-border-jasmine: #fbc02d;
+    --theme-bg-white: #FFFFFF;
+    --theme-border-white: #FFFFFF;
+
+    /* Variáveis Aplicadas (Padrões de Inicialização) */
+    --pdf-bg-color: var(--theme-bg-jasmine);
+    --pdf-marker-border: var(--theme-border-white);
+    --notes-bg-color: var(--theme-bg-white);
+    --notes-marker-border: var(--theme-border-jasmine);
+
+    /* Paleta de Cores Base */
+    --trt-blue:     #1a3a5c;
+    --trt-blue-mid: #25527f;
+    --trt-light-bg: #f4f7f9;
+    --text-dark:    #2c2c2c;
+    --border-color: #dde3ea;
+    --shadow-sm:    0 2px 6px rgba(0,0,0,0.07);
+    --shadow-md:    0 4px 16px rgba(0,0,0,0.12);
+
+    /* Mapeamento de Z-Index (Prevenção de Quebras de Sobreposição) */
+    --z-base: 1;
+    --z-crop-overlay: 100;
+    --z-floating-panel: 1000;
+    --z-classification-popup: 2000;
+    --z-audio-player: 2500;
+    --z-wizard-backdrop: 2999;
+    --z-toast: 3000;
+    --z-wizard-modal: 3000;
+    --z-classification-audio: 3001;
+    --z-context-menu: 4000;
+    --z-text-edit-modal: 4001;
+    --z-abas-modal-backdrop: 4004;
+    --z-abas-modal: 4005;
+    --z-splash: 9999;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    height: 100vh;
+    background-color: var(--trt-light-bg);
+    color: var(--text-dark);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    flex-direction: column;
+}
+
+/* Matriz de Temas: Processo */
+body.theme-processo-white {
+    --pdf-bg-color: var(--theme-bg-white);
+    --pdf-marker-border: var(--theme-border-jasmine);
+}
+body.theme-processo-jasmine {
+    --pdf-bg-color: var(--theme-bg-jasmine);
+    --pdf-marker-border: var(--theme-border-white);
+}
+
+/* Matriz de Temas: Anotações */
+body.theme-anotacoes-white {
+    --notes-bg-color: var(--theme-bg-white);
+    --notes-marker-border: var(--theme-border-jasmine);
+}
+body.theme-anotacoes-jasmine {
+    --notes-bg-color: var(--theme-bg-jasmine);
+    --notes-marker-border: var(--theme-border-white);
+}
+
+@media (min-width: 768px) {
+    body { flex-direction: row; }
+}
+
+/* ================================================
+   2. BARRA LATERAL E FERRAMENTAS
+   ================================================ */
+.sidebar {
+    background-color: var(--trt-blue);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    flex-shrink: 0;
+    padding: 20px;
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        width: 80px;
+        height: 100vh;
+        overflow-y: auto;
+        align-items: center;
+        padding: 20px 10px;
+    }
+}
+
+.sidebar-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    align-items: center;
+}
+
+.toolbar-icons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.icon-btn {
+    background: rgba(255,255,255,0.08);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 8px;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.icon-btn svg { width: 20px; height: 20px; }
+
+.icon-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.4);
+    transform: translateY(-2px);
+}
+
+.icon-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+#btn-ferramenta-recorte.ativo {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: #ffc107;
+    color: #ffd54f;
+}
+
+.toolbar-separator {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    width: 55%;
+    margin: 4px auto;
+}
+
+.sidebar-logo-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-bottom: none; 
+    margin-bottom: 24px;
+}
+
+.sidebar-logo-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: conic-gradient(transparent 75%, #FFD580 95%, #ffffff 100%);
+    animation: spin-glow 2.5s linear infinite;
+    z-index: 0;
+}
+
+.sidebar-logo-container::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 54px;
+    height: 54px;
+    background: var(--trt-blue);
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.sidebar-logo {
+    position: relative;
+    z-index: 2; 
+    max-width: 42px;
+    height: auto;
+    opacity: 0.9;
+}
+
+@keyframes spin-glow {
+    0%   { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+#btn-encerrar-sessao.confirmando {
+    background: rgba(183, 28, 28, 0.22);
+    border-color: rgba(239, 83, 80, 0.65);
+    color: #ef9a9a;
+    animation: pulse-encerrar 0.9s ease-in-out infinite;
+}
+
+@keyframes pulse-encerrar {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(183, 28, 28, 0.5); }
+    50%      { box-shadow: 0 0 0 8px rgba(183, 28, 28, 0); }
+}
+
+.page-nav-box {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    padding: 0 8px;
+    margin-bottom: 20px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.page-nav-box:focus-within {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.nav-icon {
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.nav-icon:hover { color: #ffffff; }
+
+#goto-page-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 10px 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    outline: none;
+    appearance: textfield;
+}
+
+#goto-page-input::placeholder { color: rgba(255, 255, 255, 0.5); font-weight: 400; }
+#goto-page-input::-webkit-outer-spin-button,
+#goto-page-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ================================================
+   3. ÁREA PRINCIPAL E ABAS BASE
+   ================================================ */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.tabs {
+    display: flex;
+    position: relative;
+    background: #dde3ea;
+    border-bottom: 2px solid var(--trt-blue);
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #666;
+    padding: 14px 10px;
+    font-size: 0.90rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    /* --- NOVAS REGRAS DE ALINHAMENTO DA TAG --- */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    /* ------------------------------------------ */
+    width: auto;
+    border-radius: 8px 8px 0 0;
+    margin-right: 2px;
+}
+
+.tab-btn:hover { color: var(--trt-blue); background: #e8ecef; }
+.tab-btn.active { background-color: var(--trt-blue); color: #ffffff; border-bottom: none; }
+
+/* Tag Identificadora de Módulo nas Abas */
+.tab-module-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    line-height: 1;
+}
+
+/* Paleta de Cor: Recurso Ordinário */
+.badge-ro {
+    background-color: #FFD700; /* Amarelo Ouro */
+    color: #000000;            /* Fonte Preta */
+}
+
+/* ================================================
+   4. COMPONENTES UI GENÉRICOS E TAGS
+   ================================================ */
+.polo-tag {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.70rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-block;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.doc-tag { background: #eceff1; color: #37474f; border: 1px solid #cfd8dc; }
+.tag-parte-autora   { background: #388e3c; color: #ffffff; }
+.tag-parte-re       { background: #d32f2f; color: #ffffff; }
+.tag-sentenca       { background: #e3f2fd; color: #0d47a1; }
+.tag-sentenca-de-ed { background: #f3e5f5; color: #6a1b9a; }
+.tag-laudo-pericial { background: #fff8e1; color: #e65100; }
+.tag-juizo          { background: #e3f2fd; color: #0d47a1; }
+.tag-perito         { background: #fff8e1; color: #e65100; }
+
+.chip-btn {
+    padding: 9px 14px;
+    border-radius: 22px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.84rem;
+    width: 100%;
+    border: 1.5px solid;
+    text-align: center;
+    transition: opacity 0.15s, transform 0.1s;
+    background: none;
+}
+
+.chip-btn:hover:not(:disabled) { opacity: 0.78; transform: translateY(-1px); }
+.chip-autora { color: #2e7d32; border-color: #81c784; background: #f1f8f1; }
+.chip-re { color: #b71c1c; border-color: #ef9a9a; background: #fff5f5; }
+.chip-cancelar { color: #999; border-color: #e0e0e0; background: #fafafa; font-weight: 500; }
+.chip-sentenca { color: #0d47a1; border-color: #90caf9; background: #e3f2fd; }
+.chip-sentenca-ed { color: #6a1b9a; border-color: #ce93d8; background: #f3e5f5; }
+.chip-perito { color: #e65100; border-color: #ffcc80; background: #fff8e1; }
+
+/* Botões Modais - Fase de Execução */
+.chip-exequente { color: #2e7d32; border-color: #81c784; background: #f1f8f1; }
+.chip-executada { color: #b71c1c; border-color: #ef9a9a; background: #fff5f5; }
+.chip-juizo     { color: #0d47a1; border-color: #90caf9; background: #e3f2fd; }
+.chip-auxiliar  { color: #e65100; border-color: #ffcc80; background: #fff8e1; }
+
+/* Tags do Fichário (reaproveitando a cor das clássicas para consistência) */
+.tag-parte-exequente   { background: #388e3c; color: #ffffff; }
+.tag-parte-executada   { background: #d32f2f; color: #ffffff; }
+.tag-auxiliar-justica  { background: #fff8e1; color: #e65100; }
+
+/* ================================================
+   5. TOAST DE FEEDBACK NÃO-INTRUSIVO
+   ================================================ */
+.toast-feedback {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #455a64;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border: 1px solid #546e7a;
+    z-index: var(--z-toast);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+    max-width: 320px;
+}
+
+.toast-feedback.visivel { opacity: 1; transform: translateY(0); }
+.toast-feedback.toast-sucesso { border-left: 4px solid #81c784; }
+.toast-feedback.toast-aviso   { border-left: 4px solid #ffd54f; }
+.toast-feedback.toast-erro    { border-left: 4px solid #e57373; }
+.toast-feedback.toast-info    { border-left: 4px solid #42a5f5; background-color: #e3f2fd; color: #0d47a1; box-shadow: 0 4px 12px rgba(13, 71, 161, 0.15); }
+
+/* ================================================
+   6. ATALHOS FLUTUANTES (SMART SHORTCUTS)
+   ================================================ */
+.fab-shortcut { transition: all 0.2s ease; }
+
+.fab-shortcut.is-empty {
+    background-color: transparent !important;
+    border: 2px dashed rgba(26, 58, 92, 0.3) !important;
+    color: rgba(26, 58, 92, 0.4) !important;
+    box-shadow: none !important;
+}
+.fab-shortcut.is-empty:hover {
+    background-color: rgba(26, 58, 92, 0.08) !important;
+    color: rgba(26, 58, 92, 0.8) !important;
+    border-style: solid !important;
+}
+
+/* VERDE: Recurso Autora */
+.fab-shortcut.is-active-autora { background-color: #388e3c !important; border-color: #81c784 !important; color: white !important; }
+
+/* VERMELHO: Recurso Ré 1 e Contestação */
+.fab-shortcut.is-active-re { background-color: #d32f2f !important; border-color: #ef9a9a !important; color: white !important; }
+
+/* BORDÔ: Recurso Ré 2 (Novo) */
+.fab-shortcut.is-active-re2 { background-color: #800020 !important; border-color: #b33939 !important; color: white !important; }
+
+/* AZUL: Sentença / Juízo */
+.fab-shortcut.is-active-juizo { background-color: var(--trt-blue) !important; border-color: #90caf9 !important; color: white !important; }
+
+/* AMARELO: Favorito / Coringa */
+.fab-shortcut.is-active-favorito { background-color: #fbc02d !important; border-color: #f57f17 !important; color: white !important; }
+
+/* ================================================
+   11. BOTÕES FLUTUANTES DE SCROLL E ÍNDICES
+   ================================================ */
+
+/* Contêiner de isolamento com tratamento de overflow (Alerta 5 resolvido) */
+#idea-markers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+    max-height: 45vh; /* Ocupa no máximo 45% da altura da tela */
+    overflow-y: auto;
+    scrollbar-width: none; /* Oculta scrollbar - Firefox */
+}
+#idea-markers-list::-webkit-scrollbar { 
+    display: none; /* Oculta scrollbar - Chrome/Edge/Safari */
+}
+
+/* Design unificado do marcador */
+.fab-idea-marker {
+    width: 32px;
+    height: 32px;
+    min-height: 32px; /* Garante que o flex não esmague o botão no overflow */
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
+    pointer-events: auto;
+    user-select: none;
+}
+
+.fab-idea-marker:hover {
+    transform: scale(1.15);
+    filter: brightness(1.1);
+}
+
+.fab-idea-marker:active {
+    transform: scale(0.92);
+}
+
+/* 
+   ARQUITETURA REATIVA: Controle de Visibilidade de Marcadores Numéricos
+   Se a aba ativa for 'leitura' (Processo PDF), forçamos a ocultação da lista.
+   Especificidade (1 tag + 1 atributo + 1 ID) vence a regra base.
+*/
+body[data-active-tab="leitura"] #idea-markers-list {
+    display: none;
+}
+
+/* ================================================
+   SPLASH SCREEN (TELA DE ABERTURA)
+   ================================================ */
+.juris-splash {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-splash);
+    background-color: var(--trt-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+    will-change: opacity; /* Otimização de GPU */
+}
+
+.juris-splash.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.splash-content {
+    text-align: center;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.splash-logo {
+    width: 140px;
+    height: auto;
+    opacity: 0;
+    animation: fade-in-logo 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+/* Branding: Título da Splash Screen */
+.splash-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.8rem;
+    color: #ffffff;
+    margin-top: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    opacity: 0;
+    transform: translateY(15px);
+    /* Animação encadeada: surge logo após a logo e antes do slogan */
+    animation: slide-up-slogan 0.8s ease 0.2s forwards; 
+}
+
+.splash-slogan {
+    margin-top: 24px;
+    font-size: 1.15rem;
+    font-weight: 300;
+    letter-spacing: 1.5px;
+    opacity: 0;
+    transform: translateY(15px);
+    animation: slide-up-slogan 0.8s ease 0.4s forwards; 
+}
+
+.splash-loader {
+    margin-top: 32px;
+    width: 40px;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    opacity: 0;
+    animation: fade-in-logo 0.8s ease 0.8s forwards; 
+}
+
+.splash-loader::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; height: 100%; width: 40%;
+    background-color: var(--theme-bg-jasmine);
+    animation: splash-loading 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes fade-in-logo { to { opacity: 1; } }
+@keyframes slide-up-slogan { to { opacity: 1; transform: translateY(0); } }
+@keyframes splash-loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+
+/* ================================================
+   AJUSTES DE SCROLL E AUTENTICAÇÃO
+   ================================================ */
+
+/* Ocultação de Scrollbars da Sidebar (Firefox e WebKit) */
+.sidebar {
+    scrollbar-width: none;
+}
+.sidebar::-webkit-scrollbar {
+    display: none; 
+}
+
+/* Estado Logado do Botão de Usuário */
+#btn-login-user.is-logged-in {
+    color: #39FF14; 
+    border-color: rgba(57, 255, 20, 0.4);
+    background: rgba(57, 255, 20, 0.1);
+}
+#btn-login-user.is-logged-in svg {
+    filter: drop-shadow(0 0 4px rgba(57, 255, 20, 0.5));
+}
+
+/* Base arquitetural para painéis flutuantes (Login) */
+.floating-panel-base {
+    position: fixed;
+    z-index: var(--z-floating-panel);
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+}
+
+/* Input dedicado para formulários, evitando colisão com tag <select> */
+.login-input {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: #fdfdfd;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+.login-input:focus {
+    border-color: var(--trt-blue-mid);
+    background: #ffffff;
+}
+
+/* Estado Ativo: Painel Carregado na Balança */
+#btn-balanca-justica.is-loaded {
+    background-color: #fbc02d !important;
+    border-color: #f57f17 !important;
+    color: white !important;
+    animation: pulse-balanca 0.5s ease-out;
+}
+
+#btn-balanca-justica.is-loaded svg {
+    stroke: white;
+}
+
+@keyframes pulse-balanca {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 192, 45, 0.6); }
+    50% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(251, 192, 45, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 192, 45, 0); }
+}
+
+/* Badge de Lembretes Pendentes */
+.task-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: #d32f2f;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--trt-blue);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 2;
+    pointer-events: none; /* Garante que o clique vaze para o botão pai */
+}
+
+/* Estado Ativo: Contém Tarefas */
+#btn-lembretes-tarefa.has-tasks:not(:disabled) {
+    background-color: #fbc02d !important;
+    border-color: #f57f17 !important;
+    color: white !important;
+}
+#btn-lembretes-tarefa.has-tasks:not(:disabled) svg {
+    stroke: white;
+}
+
+/* Feedback visual para Tag Clicável (Comporta-se como um botão tátil) */
+.tag-clicavel-copia {
+    cursor: pointer;
+    transition: transform 0.15s ease-out, filter 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.tag-clicavel-copia:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    filter: brightness(0.96);
+}
+.tag-clicavel-copia:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.05s ease-in;
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; color: #333; line-height: 1.6; padding: 24px; margin: 0; background: #fdfdfd; }
+        p.intro { font-size: 0.95rem; color: #555; margin-bottom: 24px; }
+        .guide-section { background: white; border: 1px solid #eee; border-left: 4px solid #ccc; padding: 16px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .guide-title { margin-top: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .guide-section p { margin: 4px 0 0 0; font-size: 0.9rem; }
+        
+        /* Paleta de Cores Mapeada do Sistema Original */
+        .c-premissa { border-color: #7b1fa2; } .c-premissa .badge { background: #7b1fa2; }
+        .c-comando { border-color: #c62828; } .c-comando .badge { background: #c62828; }
+        .c-texto { border-color: #1565c0; } .c-texto .badge { background: #1565c0; }
+        .c-nota { border-color: #616161; } .c-nota .badge { background: #616161; }
+        .c-veredito { border-color: #e65100; } .c-veredito .badge { background: #e65100; }
+        .c-fund { border-color: #00695c; } .c-fund .badge { background: #00695c; }
+        .c-preli { border-color: #5d4037; } .c-preli .badge { background: #5d4037; }
+        .c-refuta { border-color: #8B4513; } .c-refuta .badge { background: #8B4513; }
+        
+        h3 { margin-top: 32px; font-size: 1.1rem; color: #1a3a5c; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <!-- NOVO AVISO NO TOPO DO GUIA -->
+    <div class="guide-section" style="border-left-color: #2196F3; background: #e3f2fd;">
+        <h4 class="guide-title">📌 Painel Fixo (Relatório)</h4>
+        <p>O topo de cada aba possui campos fixos para <strong>Razões Recursais</strong> e <strong>Fundamentos da Origem</strong>. Eles ditam a abertura da minuta para a IA, separando o contexto histórico da análise de provas.</p>
+    </div>
+
+    <p class="intro">Enquanto o Card Principal contém o Dado Bruto (a prova), o Nó de Ideia contém a sua cognição para guiar a Inteligência Artificial.</p>
+    
+    <div class="guide-section c-premissa">
+        <h4 class="guide-title"><span class="badge">Padrão</span> Premissa Lógica</h4>
+        <p><strong>Uso:</strong> Dar contexto jurídico. <em>Ex: "A reclamada possuía mais de 20 funcionários, logo..."</em><br><strong>Reação da IA:</strong> Anexa a dedução à prova. A IA usará sua premissa como verdade absoluta.</p>
+    </div>
+    <div class="guide-section c-comando">
+        <h4 class="guide-title"><span class="badge">Comando</span> Comando Direto</h4>
+        <p><strong>Uso:</strong> Instrução imperativa. <em>Ex: "Desconsidere este depoimento na minuta."</em><br><strong>Reação da IA:</strong> A IA aplica a ordem imediatamente durante a redação.</p>
+    </div>
+    <div class="guide-section c-texto">
+        <h4 class="guide-title"><span class="badge">Texto Fixo</span> Texto Fixo</h4>
+        <p><strong>Uso:</strong> O arremate da prova.<br><strong>Reação da IA:</strong> Obriga a máquina a utilizar a redação exata fornecida (copia e cola).</p>
+    </div>
+    <div class="guide-section c-nota">
+        <h4 class="guide-title"><span class="badge">Nota Oculta</span> Nota Interna</h4>
+        <p><strong>Uso:</strong> Lembretes pessoais de valoração ou contradições.<br><strong>Reação da IA:</strong> Esta nota é <strong>completamente ocultada</strong>. A IA não terá acesso.</p>
+    </div>
+    <div class="guide-section c-veredito">
+        <h4 class="guide-title"><span class="badge">Decisão</span> Veredito / Conclusão</h4>
+        <p><strong>Uso:</strong> A decisão que o recurso deve receber.<br><strong>Reação da IA:</strong> A IA não tentará adivinhar o final — usará sua decisão como o ponto de chegada obrigatório.</p>
+    </div>
+    <div class="guide-section c-fund">
+        <h4 class="guide-title"><span class="badge">Legal</span> Fundamentação Legal</h4>
+        <p><strong>Uso:</strong> Colar uma Súmula ou artigo de lei aplicável.<br><strong>Reação da IA:</strong> Priorizará este argumento matemático acima de qualquer dedução lógica que ela própria faria.</p>
+    </div>
+
+    <h3>Estrutura da Minuta (Novos Nós)</h3>
+
+    <div class="guide-section c-preli">
+        <h4 class="guide-title"><span class="badge">Prejudicial</span> Filtro / Prejudicial</h4>
+        <p><strong>Uso:</strong> Questões temporais (prescrição) ou processuais (inépcia).<br><strong>Reação da IA:</strong> A IA redigirá e resolverá essa barreira antes de analisar as provas de mérito.</p>
+    </div>
+    <div class="guide-section c-refuta">
+        <h4 class="guide-title"><span class="badge">Mérito</span> Refutação</h4>
+        <p><strong>Uso:</strong> Explicar por que o argumento da parte cai por terra.<br><strong>Reação da IA:</strong> Guiará o LLM a escrever os parágrafos de afastamento de teses.</p>
+    </div>
+</body>
+</html>
