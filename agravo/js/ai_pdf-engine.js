@@ -247,6 +247,10 @@ window.PdfEngine = (function () {
 
                     const wrapper = document.getElementById('pdf-wrapper');
                     wrapper.innerHTML = '';
+                    
+                    // INIT DO EVENT DELEGATION
+                    _configurarEventDelegation(); 
+
                     wrapper.style.display = 'flex';
                     document.getElementById('pdf-placeholder').style.display = 'none';
                     document.getElementById('floating-page-panel').style.display = 'flex';
@@ -447,25 +451,35 @@ window.PdfEngine = (function () {
        ================================================ */
     function _renderizarHighlightsDaPagina(pageNum, highlightLayerDiv) {
         highlightLayerDiv.innerHTML = ''; 
+        const fragment = document.createDocumentFragment(); // Isolamento na RAM
         const topicos = _deps.getTopicos();
         
         topicos.forEach(topico => {
             const borderCor = topico.cor;
+            const textCor = window.TopicsManager && typeof window.TopicsManager.obterCorContraste === 'function' 
+                ? window.TopicsManager.obterCorContraste(topico.cor) 
+                : '#ffffff';
 
             const desenharMarcacoes = (itens, parentIndex) => {
                 if (!itens) return;
                 itens.forEach((item, idx) => {
-                    const numIdeia = (parentIndex !== undefined ? parentIndex : idx) + 1;
+                    const indiceDestino = parentIndex !== undefined ? parentIndex : idx;
+                    const numIdeia = indiceDestino + 1;
 
                     if ((item.tipo === 'texto' || item.tipo === 'imagem') && item.paginaFisica === pageNum && item.highlightRects && item.highlightRects.length > 0) {
                         const firstRect = item.highlightRects[0];
+                        
+                        // Criação do Crachá (Sem listeners, apenas data-attributes)
                         const badge = document.createElement('div');
                         badge.className = 'pdf-annotation-badge';
                         badge.style.backgroundColor = topico.cor;
-                        if (window.TopicsManager && typeof window.TopicsManager.obterCorContraste === 'function') {
-                            badge.style.color = window.TopicsManager.obterCorContraste(topico.cor);
-                        }
+                        badge.style.color = textCor;
                         badge.innerText = numIdeia;
+                        
+                        // Injeção de estado para o Event Delegation
+                        badge.dataset.topicId = topico.id;
+                        badge.dataset.topicNome = topico.nome;
+                        badge.dataset.index = indiceDestino;
 
                         if (item.tipo === 'texto') {
                             item.highlightRects.forEach(rect => {
@@ -476,7 +490,7 @@ window.PdfEngine = (function () {
                                 marker.style.width = rect.width + 'px';
                                 marker.style.height = rect.height + 'px';
                                 marker.style.borderBottom = `2.5px solid ${borderCor}`;
-                                highlightLayerDiv.appendChild(marker);
+                                fragment.appendChild(marker);
                             });
                             badge.style.top = (firstRect.top + (firstRect.height / 2)) + 'px';
                             badge.style.transform = 'translateY(-50%)'; 
@@ -489,62 +503,23 @@ window.PdfEngine = (function () {
                                 marker.style.width = rect.width + 'px';
                                 marker.style.height = rect.height + 'px';
                                 marker.style.border = `1.5px dashed ${borderCor}`;
-                                highlightLayerDiv.appendChild(marker);
+                                fragment.appendChild(marker);
                             });
                             badge.style.top = firstRect.top + 'px';
                             badge.style.right = 'auto';
                             badge.style.left = Math.max(4, firstRect.left - 28) + 'px';
                         }
                         
-                        badge.addEventListener('mouseenter', (e) => {
-                            const tooltip = document.getElementById('quick-intent-tooltip');
-                        if (!tooltip) return;
-                        tooltip.innerHTML = `<strong>Tópico Vinculado</strong>${topico.nome}<br><span style="font-size:0.75rem; color:#aab; display:block; margin-top:4px;">(Ctrl + Clique para acessar a anotação)</span>`;
-                        tooltip.style.display = 'block';
-                        tooltip.classList.remove('visible');
-                        
-                        let x = e.clientX + 15;
-                        let y = e.clientY + 15;
-                        const rect = tooltip.getBoundingClientRect();
-                        if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 15;
-                        if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 15;
-                        
-                        tooltip.style.left = `${x}px`;
-                        tooltip.style.top = `${y}px`;
-                        requestAnimationFrame(() => tooltip.classList.add('visible'));
-                    });
-                    
-                    badge.addEventListener('mouseleave', () => {
-                        const tooltip = document.getElementById('quick-intent-tooltip');
-                        if (tooltip) {
-                            tooltip.classList.remove('visible');
-                            setTimeout(() => { tooltip.style.display = 'none'; }, 200);
-                        }
-                    });
-
-                    // Gatilho de Viagem (Navegação Reversa)
-                    badge.addEventListener('click', (e) => {
-                        if (e.ctrlKey && !e.shiftKey) {
-                            e.preventDefault();
-                            e.stopPropagation(); // Bloqueia propagação p/ o container e popups indesejados
-                            
-                            if (window.navegarParaAnotacao) {
-                                const indiceDestino = parentIndex !== undefined ? parentIndex : idx;
-                                window.navegarParaAnotacao(topico.id, indiceDestino);
-                            }
-                        }
-                    });
-
-                    highlightLayerDiv.appendChild(badge);
+                        fragment.appendChild(badge);
                     }
                     if (item.itensCorrelacionados) {
-                        desenharMarcacoes(item.itensCorrelacionados, parentIndex !== undefined ? parentIndex : idx);
+                        desenharMarcacoes(item.itensCorrelacionados, indiceDestino);
                     }
                 });
             };
             desenharMarcacoes(topico.anotacoes);
 
-            // [NOVO] Renderização dos Alfinetes de Extração (Dumb Components)
+            // Alfinetes de Extração
             if (topico.marcosExtracao && topico.marcosExtracao.length > 0) {
                 topico.marcosExtracao.forEach(marco => {
                     if (marco.pagina === pageNum) {
@@ -554,24 +529,27 @@ window.PdfEngine = (function () {
                         pin.style.borderColor = topico.cor; 
                         pin.style.color = topico.cor; 
                         
-                        // DATA-ATTRIBUTES para a Event Delegation (Performance)
                         pin.dataset.tooltipFronteira = marco.fronteira;
                         pin.dataset.tooltipDoc = marco.docTipo;
                         pin.dataset.tooltipTopico = topico.nome;
 
                         pin.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M16 11.78L20.24 16H13v6l-1 2-1-2v-6H3.76L8 11.78V4h1V2h6v2h1v7.78z"></path></svg>`;
 
-                        highlightLayerDiv.appendChild(pin);
+                        fragment.appendChild(pin);
                     }
                 });
             }
         });
+
+        highlightLayerDiv.appendChild(fragment); // Escrita O(1) no DOM real
     }
 
     function sincronizarHighlightsGerais() {
-        document.querySelectorAll('.pdf-page-container').forEach(container => {
+        // Spatial-Slicing: Atualiza APENAS as páginas rastreadas como visíveis 
+        // ou na margem de histerese ativa do IntersectionObserver original.
+        _activePages.forEach(container => {
             if (container.dataset.loaded === 'true') {
-                const pageNum = parseInt(container.dataset.pageNumber);
+                const pageNum = parseInt(container.dataset.pageNumber, 10);
                 const highlightLayerDiv = container.querySelector('.highlightLayer');
                 if (highlightLayerDiv) {
                     _renderizarHighlightsDaPagina(pageNum, highlightLayerDiv);
@@ -630,6 +608,71 @@ window.PdfEngine = (function () {
         _pageLabelsGlobais = null;
         _pageMetadataCache.clear();
         _currentPage = 1;
+    }
+
+    /* ================================================
+       EVENT DELEGATION: HIGHLIGHTS E TOOLTIPS (O(1) Memory)
+       ================================================ */
+    function _configurarEventDelegation() {
+        const container = document.getElementById('pdf-container');
+        if (!container || container.dataset.delegationBound) return;
+
+        // Tooltip Singleton
+        let _tooltip = null;
+
+        // Delegação de Hover (Mouseover / Mouseout)
+        container.addEventListener('mouseover', (e) => {
+            const badge = e.target.closest('.pdf-annotation-badge');
+            if (!badge) return;
+
+            if (!_tooltip) _tooltip = document.getElementById('quick-intent-tooltip');
+            if (!_tooltip) return;
+
+            const topicNome = badge.dataset.topicNome;
+            
+            _tooltip.innerHTML = `<strong>Tópico Vinculado</strong>${topicNome}<br><span style="font-size:0.75rem; color:#aab; display:block; margin-top:4px;">(Ctrl + Clique para acessar a anotação)</span>`;
+            _tooltip.style.display = 'block';
+            _tooltip.classList.remove('visible');
+            
+            let x = e.clientX + 15;
+            let y = e.clientY + 15;
+            const rect = _tooltip.getBoundingClientRect();
+            
+            if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 15;
+            if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 15;
+            
+            _tooltip.style.left = `${x}px`;
+            _tooltip.style.top = `${y}px`;
+            requestAnimationFrame(() => _tooltip.classList.add('visible'));
+        });
+
+        container.addEventListener('mouseout', (e) => {
+            const badge = e.target.closest('.pdf-annotation-badge');
+            if (!badge || !_tooltip) return;
+            
+            _tooltip.classList.remove('visible');
+            setTimeout(() => { _tooltip.style.display = 'none'; }, 200);
+        });
+
+        // Delegação de Click
+        container.addEventListener('click', (e) => {
+            const badge = e.target.closest('.pdf-annotation-badge');
+            if (!badge) return;
+
+            if (e.ctrlKey && !e.shiftKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const topicId = badge.dataset.topicId;
+                const index = parseInt(badge.dataset.index, 10);
+                
+                if (window.navegarParaAnotacao) {
+                    window.navegarParaAnotacao(topicId, index);
+                }
+            }
+        });
+
+        container.dataset.delegationBound = 'true';
     }
 
     return {
