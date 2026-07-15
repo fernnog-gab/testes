@@ -1,0 +1,280 @@
+/* ================================================
+   JURIS READER & TOOLS CSS
+   Ferramentas de Captura, PDF, Áudio, Modais e Overlay
+   ================================================ */
+
+/* ================================================
+   1. LEITOR DE PDF E PAGINAÇÃO FLUTUANTE
+   ================================================ */
+#pdf-container { flex: 1; overflow: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; position: relative; }
+#pdf-placeholder { color: #aab; text-align: center; margin-top: 60px; font-size: 0.95rem; line-height: 1.7; }
+#pdf-placeholder svg { display: block; margin: 0 auto 16px; opacity: 0.3; }
+#pdf-wrapper { position: relative; display: none; flex-shrink: 0; width: 100%; flex-direction: column; align-items: center; }
+
+.pdf-page-container { background-color: var(--pdf-bg-color) !important; transition: background-color 0.3s ease; }
+.pdf-page-container canvas { mix-blend-mode: multiply; }
+
+.textLayer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; line-height: 1; pointer-events: auto; user-select: text; transform-origin: 0% 0%; }
+.textLayer span { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0% 0%; }
+.textLayer ::selection { background: rgba(26, 58, 92, 0.28); }
+
+.annotationLayer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: auto; transform-origin: 0% 0%; }
+.annotationLayer section { position: absolute; cursor: pointer; z-index: 2; }
+.annotationLayer .linkAnnotation > a { position: absolute; font-size: 1em; top: 0; left: 0; width: 100%; height: 100%; background: transparent; transition: background 0.15s ease, box-shadow 0.15s ease; cursor: pointer; }
+.annotationLayer .linkAnnotation > a:hover { background: rgba(163, 230, 53, 0.15); box-shadow: 0 0 0 2px rgba(163, 230, 53, 0.3) inset; border-radius: 4px; }
+
+.floating-page-panel { position: sticky; top: 16px; align-self: flex-end; margin-right: 8px; z-index: var(--z-floating-panel); display: flex; gap: 8px; align-items: center; background: rgba(255, 255, 255, 0.92); padding: 6px 8px; border-radius: 10px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.current-page-badge { background: var(--trt-blue); color: white; font-size: 0.82rem; font-weight: 700; padding: 7px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: center; min-width: 72px; white-space: nowrap; user-select: none; }
+.page-nav-box.floating-nav { background: transparent; border: 1px solid var(--border-color); margin-bottom: 0; }
+.page-nav-box.floating-nav:focus-within { border-color: var(--trt-blue-mid); background: white; }
+.page-nav-box.floating-nav .nav-icon { color: #999; }
+.page-nav-box.floating-nav .nav-icon:hover { color: var(--trt-blue); }
+.page-nav-box.floating-nav #goto-page-input { color: var(--text-dark); width: 62px; }
+.page-nav-box.floating-nav #goto-page-input::placeholder { color: #bbb; font-weight: 400; }
+
+/* ================================================
+   OTIMIZAÇÃO NATIVA: CONTENT VISIBILITY
+   ================================================ */
+.pdf-page-container {
+    /* Força o navegador a pular o rendering de nós invisíveis */
+    content-visibility: auto;
+    /* Evita que o scroll colapse antes do inline-style ser aplicado. 
+       Será retroalimentado pelo JS se necessário */
+    contain-intrinsic-size: 1000px 1400px;
+}
+
+/* ================================================
+   2. FERRAMENTA DE RECORTE DE IMAGEM E EXTRATOR
+   ================================================ */
+#crop-overlay { display: none; z-index: var(--z-crop-overlay); background: rgba(0, 0, 0, 0.08); cursor: crosshair; pointer-events: auto; }
+#crop-box { position: absolute; border: 2px dashed var(--trt-blue); background: rgba(26, 58, 92, 0.08); pointer-events: none; }
+
+/* Cursor dinâmico informando o estado da aplicação */
+body.modo-extrator-ativo #crop-overlay { display: block; cursor: crosshair; background: rgba(46, 125, 50, 0.05); z-index: var(--z-crop-overlay); }
+
+/* ================================================
+   ESTILOS DO ALFINETE VISUAL E ESTADO DO BOTÃO
+   ================================================ */
+
+/* Estado concluído do botão Extrator (Amarelo) - Alta especificidade sem !important */
+button#btn-ferramenta-extrator.extrator-completo:not(:disabled) {
+    background-color: #fbc02d;
+    border-color: #f57f17;
+    color: white;
+    box-shadow: 0 4px 10px rgba(251, 192, 45, 0.4);
+}
+
+/* Garante que o ícone interno respeite a inversão de cores (cobre fill e stroke) */
+button#btn-ferramenta-extrator.extrator-completo:not(:disabled) svg {
+    stroke: white;
+    fill: white;
+}
+
+/* Refatoração da classe existente: Pino colorido por dado (Inline Style) */
+.pdf-extrator-pin {
+    position: absolute;
+    left: 4px;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    border: 2px solid; /* Cor injetada via JS */
+    cursor: help;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    pointer-events: auto; /* Permite passagem de eventos no container do pino */
+}
+
+.pdf-extrator-pin:hover {
+    transform: translateY(-50%) scale(1.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.pdf-extrator-pin svg {
+    width: 14px;
+    height: 14px;
+    pointer-events: none; /* Bloqueia bubbling interno nos elementos filhos */
+}
+
+.pdf-extrator-pin path {
+    pointer-events: none; /* Garante consistência de interação no nível de vetor */
+}
+
+/* ================================================
+   3. MODAIS E POPUPS GERAIS (WIZARDS)
+   ================================================ */
+.doc-list-container { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; padding-right: 6px; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px; background: #fdfdfd; }
+.doc-list-container::-webkit-scrollbar { width: 6px; }
+.doc-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+.doc-btn { background: #ffffff; border: 1px solid var(--border-color); padding: 10px 12px; border-radius: 6px; text-align: left; font-size: 0.82rem; font-weight: 600; color: var(--trt-blue); cursor: pointer; transition: all 0.15s ease; }
+.doc-btn:hover { background: #e8ecef; border-color: var(--trt-blue-mid); transform: translateX(2px); }
+.doc-btn.dual::after { content: " \2192"; float: right; color: #999; }
+.doc-btn.neutro { color: #455a64; background: #f5f7f8; }
+.doc-highlight { font-size: 0.9rem; font-weight: 800; margin-bottom: 12px; color: var(--trt-blue-mid); text-align: center; background: var(--trt-light-bg); padding: 6px; border-radius: 4px; }
+
+#classification-popup { position: fixed; background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; box-shadow: var(--shadow-md); z-index: var(--z-classification-popup); display: none; flex-direction: column; gap: 8px; min-width: 220px; }
+.popup-label { font-size: 0.74rem; color: #999; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.topic-select { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 0.84rem; color: var(--text-dark); background: #fafafa; cursor: pointer; outline: none; transition: border-color 0.2s; }
+.topic-select:focus { border-color: var(--trt-blue-mid); background: white; }
+.popup-textarea { display: none; width: 100%; min-height: 72px; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 0.84rem; color: var(--text-dark); background: #fafafa; resize: vertical; outline: none; transition: border-color 0.2s, background 0.2s; line-height: 1.5; }
+.popup-textarea:focus { border-color: var(--trt-blue-mid); background: #ffffff; }
+
+.popup-textarea.textarea-readonly {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
+    cursor: not-allowed;
+    resize: none;
+}
+
+.popup-textarea.textarea-readonly:focus,
+.popup-textarea.textarea-readonly:active {
+    border-color: #e2e8f0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.annotation-context-menu { position: fixed; display: none; flex-direction: row; gap: 4px; padding: 4px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); z-index: var(--z-context-menu); }
+.ann-action-btn { background: transparent; border: none; cursor: pointer; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-dark); transition: background 0.2s, color 0.2s; }
+.ann-action-btn svg { width: 18px; height: 18px; pointer-events: none; }
+.ann-action-btn:hover { background: var(--trt-light-bg); color: var(--trt-blue); }
+.ann-action-delete:hover { background: #ffebee; color: #c62828; }
+.ann-action-btn.btn-intent.active-intent { background-color: #f5f5f5; border-left: 3px solid var(--trt-blue-mid); border-radius: 0 6px 6px 0; font-weight: bold; }
+
+#wizard-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: var(--z-wizard-backdrop); }
+.crop-wizard-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 12px 48px rgba(0, 0, 0, 0.28); z-index: var(--z-wizard-modal); min-width: 360px; max-width: 90vw; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.wizard-header { font-size: 1.05rem; font-weight: 800; color: var(--trt-blue); border-bottom: 2px solid var(--trt-light-bg); padding-bottom: 8px; margin-bottom: 4px; }
+.wizard-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; padding-top: 12px; border-top: 1px solid #eee; }
+.crop-preview-container { text-align: center; background: var(--trt-light-bg); border: 2px dashed var(--border-color); border-radius: 8px; padding: 12px; max-height: 40vh; overflow-y: auto; }
+.crop-preview-container img { max-width: 100%; border-radius: 4px; box-shadow: var(--shadow-sm); }
+.wizard-polo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.text-edit-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 12px 48px rgba(0,0,0,0.28); z-index: var(--z-text-edit-modal); min-width: 400px; max-width: 90vw; display: flex; flex-direction: column; gap: 12px; }
+.edit-header { font-size: 1.05rem; font-weight: 800; color: var(--trt-blue); border-bottom: 2px solid var(--trt-light-bg); padding-bottom: 8px; }
+.edit-toolbar { display: flex; gap: 8px; margin-bottom: 4px; }
+.edit-tool-btn { background: #fff; border: 1px solid #bbb; border-radius: 6px; padding: 6px 12px; cursor: pointer; color: var(--trt-blue); font-size: 0.9rem; transition: background 0.2s; }
+.edit-tool-btn:hover { background: #f0f4f8; }
+.edit-textarea { width: 100%; min-height: 140px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 0.9rem; line-height: 1.5; outline: none; resize: vertical; }
+.edit-textarea:focus { border-color: var(--trt-blue-mid); }
+.edit-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; padding-top: 12px; border-top: 1px solid #eee; }
+.edit-save-btn { background: var(--trt-blue); color: white; border-color: var(--trt-blue); }
+
+.aba-manager-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #fafafa; margin-bottom: 6px; }
+.aba-manager-nome { font-weight: 600; color: var(--trt-blue); font-size: 0.88rem; }
+.aba-manager-actions { display: flex; gap: 8px; }
+
+/* Tipografia Extra no Modal Markdown */
+.txt-largo-1 { font-size: 1.15em; line-height: 1.6; display: inline; }
+.txt-largo-2 { font-size: 1.35em; line-height: 1.6; display: inline; }
+.font-btn-label { font-size: 1.1em; font-weight: bold; }
+.font-btn-label-lg { font-size: 1.25em; font-weight: 900; }
+
+/* Correção Backup Header */
+.wizard-header.backup-header { background: var(--trt-blue); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; margin: -20px -20px 16px -20px; border-radius: 12px 12px 0 0; border-bottom: none; }
+.wizard-header.backup-header svg { width: 20px; height: 20px; }
+
+/* ================================================
+   4. COMPONENTES DE ÁUDIO
+   ================================================ */
+#active-audio-indicator { isolation: isolate; position: relative; margin-left: auto; margin-right: 16px; align-self: center; background: #e53935; color: white; width: 34px; height: 34px; border-radius: 50%; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(229, 57, 53, 0.4); animation: pulse-mic 2s infinite; }
+#active-audio-indicator svg { width: 16px; height: 16px; }
+#active-audio-indicator.playing-audio { background: transparent; animation: none; box-shadow: none; overflow: visible; }
+#active-audio-indicator.playing-audio::before { display: none; }
+#active-audio-indicator.playing-audio::after { content: ''; position: absolute; inset: 0; background: #2e7d32; border-radius: 50%; z-index: 1; box-shadow: 0 2px 6px rgba(46, 125, 50, 0.4); }
+#active-audio-indicator.playing-audio.is-spinning::before { display: block; content: ''; position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); border-radius: 50%; background: conic-gradient(transparent 75%, #39FF14 95%, #ffffff 100%); animation: spin-glow 2.5s linear infinite; z-index: 0; }
+#active-audio-indicator.playing-audio svg { position: relative; z-index: 2; }
+@keyframes pulse-mic { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(229, 57, 53, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(229, 57, 53, 0); } }
+
+#active-audio-indicator.pending-audio { background: #f57c00; box-shadow: 0 2px 6px rgba(245, 124, 0, 0.4); animation: pulse-mic-pending 2.5s infinite; }
+@keyframes pulse-mic-pending { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(245, 124, 0, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 124, 0, 0); } }
+
+#audio-player-panel { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; padding: 16px; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.25); z-index: var(--z-audio-player); border: 1px solid var(--border-color); width: 520px; max-width: 90vw; max-height: 85vh; overflow-y: auto; flex-direction: column; gap: 12px; }
+.audio-header { display: flex; justify-content: space-between; font-weight: 700; color: var(--trt-blue); border-bottom: 1px solid #eee; padding-bottom: 8px; }
+.audio-header button { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999; }
+.audio-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.audio-markers { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #555; background: #f4f7f9; padding: 6px 10px; border-radius: 6px; }
+
+.audio-main-controls { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+.audio-main-controls audio { width: 100%; height: 40px; outline: none; }
+.audio-jump-box { align-self: center; display: flex; align-items: center; gap: 4px; background: #f4f7f9; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; color: #555; }
+.audio-jump-box input { width: 32px; text-align: center; border: 1px solid #ccc; border-radius: 4px; padding: 4px 0; font-size: 0.8rem; appearance: textfield; }
+.audio-jump-box input::-webkit-outer-spin-button, .audio-jump-box input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.audio-jump-box input:focus { border-color: var(--trt-blue); outline: none; }
+.audio-jump-box button { background: #2e7d32; color: white; border: none; border-radius: 4px; padding: 4px 8px; margin-left: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+.audio-jump-box button:hover { background: #1b5e20; }
+
+.audio-history-section { margin-top: 4px; }
+.audio-history-section summary { display: flex; align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--trt-blue); cursor: pointer; padding: 6px 0; user-select: none; list-style: none; }
+.audio-history-section summary::-webkit-details-marker { display: none; }
+.audio-history-section summary:hover { color: var(--trt-blue-mid); }
+.audio-history-section summary::before { content: '▶'; margin-right: 6px; font-size: 0.7rem; color: #999; transition: transform 0.2s ease; }
+.audio-history-section[open] summary::before { transform: rotate(90deg); color: var(--trt-blue); }
+
+#audio-history-list { margin-top: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px; }
+#audio-history-list::-webkit-scrollbar { width: 6px; }
+#audio-history-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+.audio-history-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: white; border: 1px solid #eee; border-radius: 6px; margin-bottom: 6px; cursor: pointer; transition: background 0.2s; }
+.audio-history-item:hover { background: #fdfaf4; border-color: #f2e3c6; }
+.audio-history-item .hist-title { font-size: 0.8rem; font-weight: 600; color: var(--text-dark); }
+.audio-history-item .hist-time { font-size: 0.75rem; color: #d84315; background: #ffe082; padding: 2px 6px; border-radius: 12px; font-weight: bold; }
+
+/* ================================================
+   5. BOTÕES FLUTUANTES, TOOLTIPS E HIGHLIGHTS (PDF)
+   ================================================ */
+.scroll-fab-container { position: fixed; bottom: 32px; right: 28px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; pointer-events: none; }
+.fab-btn { pointer-events: auto; width: 42px; height: 42px; border-radius: 50%; background-color: var(--trt-blue); color: white; border: 2px solid rgba(255, 255, 255, 0.25); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.18s ease, background-color 0.18s ease, opacity 0.25s ease; }
+.fab-btn svg { width: 20px; height: 20px; }
+.fab-btn:hover { background-color: var(--trt-blue-mid); transform: scale(1.1); }
+.fab-btn:active { transform: scale(0.92); }
+.fab-btn.is-hidden { opacity: 0; pointer-events: none; transform: scale(0.8); }
+
+.quick-tooltip { position: fixed; background: #2c3e50; color: #ecf0f1; padding: 12px 16px; border-radius: 8px; font-size: 0.85rem; max-width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 5000; pointer-events: none; line-height: 1.5; border-left: 4px solid #34db98; opacity: 0; transform: translateY(10px); transition: opacity 0.2s ease, transform 0.2s ease; }
+.quick-tooltip.visible { opacity: 1; transform: translateY(0); }
+.quick-tooltip strong { display: block; color: #34db98; margin-bottom: 4px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.highlightLayer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 1; }
+.pdf-highlight-rect { position: absolute; mix-blend-mode: multiply; border-radius: 2px; }
+
+.pdf-annotation-badge { position: absolute; right: 4px; width: 22px; height: 22px; border-radius: 50%; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25); cursor: pointer; z-index: 5; border: 2px solid var(--pdf-marker-border); transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.3s ease; user-select: none; pointer-events: auto; }
+.pdf-annotation-badge:hover { transform: scale(1.15) translateY(-50%); box-shadow: 0 5px 12px rgba(0, 0, 0, 0.35); z-index: 10; }
+
+@keyframes flash-highlight { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--trt-blue) 60%, transparent); border-color: var(--trt-blue); transform: scale(1.01); } 50% { box-shadow: 0 0 0 16px transparent; background-color: color-mix(in srgb, var(--trt-blue) 5%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; transform: scale(1); } }
+.card-flash-focus { animation: flash-highlight 1.2s cubic-bezier(0.25, 0.8, 0.25, 1); }
+
+/* ================================================
+   HUB DE EXPORTAÇÃO AVANÇADA (RAG IA)
+   ================================================ */
+.export-option-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fdfdfd;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.export-option-card:hover {
+    background: #f4f7f9;
+    border-color: var(--trt-blue-mid);
+}
+.export-option-card.locked-option {
+    background: #e3f2fd;
+    border-color: #90caf9;
+    cursor: not-allowed;
+}
+.export-option-card input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: inherit;
+    accent-color: var(--trt-blue);
+}
+.export-option-details { display: flex; flex-direction: column; }
+.export-option-title { font-size: 0.9rem; font-weight: 700; color: var(--trt-blue); }
+.export-option-subtitle { font-size: 0.75rem; color: #666; margin-top: 2px; }

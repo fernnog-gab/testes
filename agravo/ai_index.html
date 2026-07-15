@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- NOVO: Contexto Arquitetural Injetado -->
+    <meta name="juris-module" content="ai">
+    
+    <title>Juris Notes</title>
+
+    <!-- Fontes Google (Playfair Display para Branding) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&display=swap" rel="stylesheet">
+
+    <!-- Ícones / Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../imagens/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../imagens/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../imagens/favicon-16x16.png">
+    <link rel="icon" href="../imagens/favicon.ico">
+    
+    <!-- ATUALIZAÇÃO PDF.JS V4 - CARREGAMENTO VIA MÓDULO -->
+<script type="module">
+    // 1. Importa a biblioteca usando a extensão .mjs (Módulo ES)
+    import * as pdfjsLibModulo from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.mjs';
+
+    // 2. Injeta a biblioteca globalmente para o seu app.js parar de dar erro
+    window.pdfjsLib = pdfjsLibModulo;
+
+    // 3. Define o "trabalhador" (worker) usando a mesma extensão .mjs
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.worker.mjs';
+    
+    // NOVO: Aponta o diretório oficial de fontes para evitar erros de renderização
+    pdfjsLib.GlobalWorkerOptions.standardFontDataUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/standard_fonts/';
+</script>
+    
+    <!-- 1. Estilos Base, Variáveis Globais e Estrutura Principal (Core) -->
+<link rel="stylesheet" href="ai_juris-core.css?v=2.0.0">
+
+<!-- 2. Ferramentas Globais, PDF, Áudio e Modais (Ferramentas de Entrada) -->
+<link rel="stylesheet" href="ai_juris-reader-tools.css?v=3.0.0">
+
+<!-- 3. Fichário, Timeline, Fases Metodológicas e Acervo (Síntese e Saída) -->
+<link rel="stylesheet" href="ai_juris-timeline-cards.css?v=3.0.0">
+</head>
+<body>
+    
+    <!-- ========================================== -->
+    <!-- SPLASH SCREEN JURIS NOTES                  -->
+    <!-- ========================================== -->
+    <div id="juris-splash" class="juris-splash">
+        <div class="splash-content">
+            <img src="../imagens/logo.png" alt="Juris Notes Logo" class="splash-logo">
+            <!-- NOVA LINHA: Injeção do Título da Aplicação -->
+            <h1 class="splash-title">Juris Notes</h1>
+            <p id="splash-dynamic-text" class="splash-slogan">Organizar ideias. Fazer justiça.</p>
+            <div class="splash-loader"></div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <!-- LOGO ATUALIZADA COM ONCLICK -->
+         <div class="sidebar-logo-container" title="Menu Juris Notes" onclick="abrirMenuJuris(event)" style="cursor: pointer;">
+            
+            <!-- SUBSTITUA a tag <img> atual por esta abaixo: -->
+            <img src="../imagens/logo.png" alt="Logo" class="sidebar-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ffffff\' stroke-width=\'2\'><path d=\'M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z\'/></svg>'">
+            
+        </div>
+        
+        <div class="sidebar-tools">
+            <div class="toolbar-icons">
+                
+                <!-- ── GRUPO 1: Ferramentas de Sistema ───────────────── -->
+                <!-- NOVO BOTÃO: Voltar ao Hub -->
+                <a href="../index.html" class="icon-btn" title="Voltar ao Hub Principal" style="margin-bottom: 8px; background: rgba(26, 58, 92, 0.4);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </a>
+                <label for="pdf-upload" class="icon-btn" title="Novo Processo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                </label>
+                <input type="file" id="pdf-upload" accept="application/pdf" style="display:none;" onchange="novoProcesso(event)">
+                
+                <button class="icon-btn" id="btn-retomar-sessao" onclick="retomarProcesso()" title="Retomar Processo Já em Análise">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                        <line x1="9" y1="20" x2="15" y2="20"></line>
+                        <line x1="12" y1="4" x2="12" y2="20"></line>
+                    </svg>
+                </button>
+                
+                <button class="icon-btn" id="btn-encerrar-sessao" onclick="encerrarSessao()" title="Encerrar Sessão" disabled>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                        <line x1="9" y1="11" x2="11" y2="11"/>
+                    </svg>
+                </button>
+
+                <button class="icon-btn" id="btn-login-user" onclick="toggleLoginMenu(event)" title="Acessar Conta (Firebase)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </button>
+
+                <!-- ── Separador Delicado ─────────────────────────────── -->
+                <hr class="toolbar-separator">
+
+                <!-- ── GRUPO 2: Ferramentas de Trabalho Diário ───────── -->
+                <button class="icon-btn" id="btn-novo-topico" onclick="criarTopicoPrompt()" title="Criar Vício a Analisar" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+
+                 <!-- NOVO: Botão da Balança da Justiça -->
+                <button class="icon-btn" id="btn-balanca-justica" onclick="BalancaManager.abrirPainel(event)" title="Dossiê Recursal&#10;[Alt + B] para abrir/substituir" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                        <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                        <path d="M7 21h10"></path>
+                        <path d="M12 3v18"></path>
+                        <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
+                    </svg>
+                </button>
+
+                <!-- Botão de Tarefas (Lembretes) -->
+                <button class="icon-btn" id="btn-lembretes-tarefa" onclick="BalancaManager.abrirLembretes(event)" title="Lembretes / Tarefas do Painel" disabled style="position: relative;">
+                    <!-- Ícone de Check-list -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    <!-- Badge de Contador -->
+                    <span id="badge-tarefas" class="task-badge" style="display: none;">0</span>
+                </button>
+
+                <!-- ── Separador Delicado ─────────────────────────────── -->
+                <hr class="toolbar-separator">
+
+                <button class="icon-btn" id="btn-ferramenta-texto" onmousedown="event.preventDefault()" onclick="capturarTrechoSelecionado()" title="Gerar Anotação a Partir de Texto" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+
+                <button class="icon-btn" id="btn-ferramenta-recorte" onclick="iniciarRecorteWizard()" title="Ativar Modo Recorte de Imagem" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </button>
+
+                <button class="icon-btn" id="btn-ferramenta-extrator" onclick="iniciarMarcadorExtracao()" title="Alfinete de Extração (Marcar Início/Fim para IA)" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                </button>
+
+                <button class="icon-btn" id="btn-ferramenta-audio" onclick="AudioManager.iniciarSessao()" title="Analisar Audiência (Áudio)" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+
+                <button class="icon-btn" id="btn-exportar-topico" onclick="ExportManager.abrirPainelExportacao()" title="Exportação Avançada para IA" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
+
+                <button class="icon-btn" id="btn-gerador-contexto" onclick="abrirModalGeradorContexto()" title="Gerador de Contexto Estruturado para IA" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                </button>
+
+                <button class="icon-btn tag-btn-ai" id="btn-acervo-modelos" title="Acervo de Modelos" style="display: none;" onclick="abrirModalAcervo()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 22px; height: 22px;">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                        <line x1="4" y1="12" x2="20" y2="12"></line>
+                        <line x1="10" y1="7" x2="14" y2="7"></line>
+                        <line x1="10" y1="17" x2="14" y2="17"></line>
+                    </svg>
+                </button>
+                
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-leitura" onclick="trocarAba('leitura')">
+                Processo <span id="tag-numero-processo" class="tab-module-badge badge-ai" style="display: none; margin-left: 6px; font-size: 0.65rem;"></span>
+            </button>
+            <button class="tab-btn" id="tab-historico" onclick="trocarAba('historico')">
+            Anotações <span class="tab-module-badge badge-ai">AGRAVO DE INSTRUMENTO</span>
+        </button>
+            <div id="active-audio-indicator" onclick="AudioManager.alternarPlayer()" title="Audiência em andamento (Clique para abrir)" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            </div>
+        </div>
+        
+        <div id="pdf-container">
+            
+            <!-- Painel flutuante sticky: paginador + indicador de página atual -->
+            <div class="floating-page-panel" id="floating-page-panel" style="display: none;">
+                <div class="current-page-badge" title="Página sendo visualizada">
+                    Pág. <span id="current-page-display">1</span>&nbsp;de&nbsp;<span id="total-page-display">?</span>
+                </div>
+                <div class="page-nav-box floating-nav" title="Digite o número e pressione Enter">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="irParaPagina()">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="number" id="goto-page-input" placeholder="Ir p/" min="1">
+                </div>
+            </div>
+
+            <p id="pdf-placeholder">
+                Carregue um arquivo PDF para iniciar a leitura.<br>
+                <span style="font-size:0.82rem; color:#ccc;">Use o painel à esquerda.</span>
+            </p>
+            <div id="pdf-wrapper"></div>
+            <div id="crop-overlay"></div>
+        </div>
+        
+        <div id="history-container">
+            <div id="topics-tabs-header" class="topics-tab-bar"></div>
+            
+            <!-- NOVO: Wrapper relativo que encapsula o cronômetro e o conteúdo -->
+            <div style="position: relative;">
+                <!-- Cronômetro e Lâmpada (Tracker Flutuante) ancorados no scroll -->
+                <div id="efficiency-tracker-container" style="display: flex; gap: 12px; align-items: flex-start; display: none;">
+                    
+                    <!-- NOVO: Rastreador de Notas Ocultas (A Lâmpada) -->
+                    <div id="hidden-notes-tracker" class="floating-lamp-tracker" style="display: none;" onclick="TopicsManager.rolarParaProximaNotaOculta()" title="Você tem notas ocultas neste tópico. Clique para navegar.">
+                        <div class="lamp-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18h6"></path>
+                                <path d="M10 22h4"></path>
+                                <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+                            </svg>
+                        </div>
+                        <span id="hidden-notes-badge" class="task-badge">0</span>
+                    </div>
+
+                    <!-- MANTIDO: Pílula do Cronômetro original -->
+                    <div id="efficiency-tracker-pill" onclick="TimeTrackerManager.handleClick()">
+                        <div id="tracker-bg-mask"></div>
+                        <div class="tracker-content">
+                            <div id="efficiency-tracker-dot"></div>
+                            <span id="efficiency-tracker-time">00:00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Área onde os cards são injetados pelo sistema -->
+                <div id="topics-tab-content" class="topics-content-area"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- POPUP DE CLASSIFICAÇÃO
+         ATENÇÃO: o #seletor-topico está DENTRO do popup.
+         O select é populado dinamicamente por exibirPopupClassificacao().
+    -->
+    <div id="classification-popup">
+        <!-- Banner de feedback de cor (desacoplado) -->
+        <div id="popup-topic-color-feedback" style="height: 0; border-radius: 4px 4px 0 0; transition: height 0.2s, background-color 0.2s;"></div>
+        
+        <p class="popup-label" style="margin-top: 8px;">Tópico de Destino:</p>
+        <select id="seletor-topico" class="topic-select">
+            <option value="">Selecione o Tópico...</option>
+        </select>
+        
+        <textarea id="comentario-input" class="popup-textarea" rows="2" placeholder="Descreva o que esta imagem mostra (opcional)..."></textarea>
+        
+        <div id="agrupamento-popup-box" style="display:none; flex-direction:column; gap:6px; margin-bottom: 8px;">
+            <p class="popup-label">Modo de Inserção:</p>
+            <div style="display:flex; gap:10px;">
+                <label style="font-size:0.8rem; cursor:pointer;">
+                    <input type="radio" name="modo_agrupar_popup" value="nova" checked onchange="toggleAgruparPopup()"> Nova Ideia
+                </label>
+                <label style="font-size:0.8rem; cursor:pointer;">
+                    <input type="radio" name="modo_agrupar_popup" value="agrupar" onchange="toggleAgruparPopup()"> Agrupar a Existente
+                </label>
+            </div>
+            <select id="vicio-popup-select" class="topic-select" style="margin-top: 6px;">
+                <option value="">Selecione o Óbice/Pressuposto...</option>
+                <option value="tempestividade">Tempestividade</option>
+                <option value="preparo">Preparo (Custas/GFIP)</option>
+                <option value="representacao">Representação</option>
+                <option value="adequacao">Adequação</option>
+            </select>
+            <input type="number" id="input-ideia-popup" class="topic-select" style="display:none; margin-top:6px;" placeholder="Nº da Ideia (ex: 1)" min="1">
+        </div>
+
+        <div id="popup-step-doc">
+            <p class="popup-label">Fase de Auditoria e Documento:</p>
+            <div class="phase-tabs" id="popup-phase-tabs"></div>
+            <div id="lista-docs-popup" class="doc-list-container"></div>
+            <button class="chip-btn chip-cancelar" style="margin-top: 12px;" onclick="fecharPopupClassificacao()">✕ Cancelar</button>
+        </div>
+
+        <div id="popup-step-polo" style="display:none;">
+            <p class="popup-label">Qualifique o documento:</p>
+            <p id="popup-doc-selecionado" class="doc-highlight"></p>
+            <!-- Contêiner dinâmico -->
+            <div id="popup-polo-buttons-container" style="display:flex; flex-direction:column; gap:6px;">
+            </div>
+        </div>
+    </div>
+    
+    <!-- MENU CONTEXTUAL DA ANOTAÇÃO (excluir / reordenar / nó de ideia) -->
+    <div id="annotation-context-menu" class="annotation-context-menu">
+        <button class="ann-action-btn" title="Editar Anotação" onclick="editarAnotacao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+        </button>
+        <button class="ann-action-btn" title="Adicionar Nó de Ideia" onclick="acionarNovoNoIdeia()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        </button>
+        <button class="ann-action-btn" title="Reordenar" onclick="reordenarAnotacao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="8 17 12 21 16 17"></polyline>
+                <line x1="12" y1="12" x2="12" y2="21"></line>
+                <polyline points="8 7 12 3 16 7"></polyline>
+                <line x1="12" y1="12" x2="12" y2="3"></line>
+            </svg>
+        </button>
+        <button class="ann-action-btn ann-action-delete" title="Excluir Anotação" onclick="excluirAnotacao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+        </button>
+    </div>
+    
+    <!-- MENU CONTEXTUAL DAS SUB-ANOTAÇÕES (CORRIGIDO) -->
+    <div id="sub-annotation-context-menu" class="annotation-context-menu" style="flex-direction: column; width: 220px;">
+        
+        <!-- NOVA OPÇÃO: Salvar no Acervo -->
+        <button class="ann-action-btn" style="justify-content: flex-start; gap: 8px; width: 100%; font-weight: bold; color: var(--trt-blue);" title="Salvar Nó no Acervo" onclick="abrirModalSalvarModelo()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <span style="font-size: 0.8rem;">Salvar no Acervo</span>
+        </button>
+        
+        <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 4px 0;">
+        
+        <!-- OPÇÕES: Intenção da IA (Mantidas, sem o título) -->
+        <button class="ann-action-btn btn-intent" data-intent="comando" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Definir como Comando" onclick="definirIntencaoSubAnotacao('comando')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#c62828" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg>
+            <span style="font-size: 0.8rem; color: #c62828;">Comando Direto</span>
+        </button>
+        
+        <button class="ann-action-btn btn-intent" data-intent="texto" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Definir como Texto Fixo" onclick="definirIntencaoSubAnotacao('texto')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1565c0" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span style="font-size: 0.8rem; color: #1565c0;">Texto Fixo</span>
+        </button>
+        
+        <button class="ann-action-btn btn-intent" data-intent="nota" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Ocultar da IA" onclick="definirIntencaoSubAnotacao('nota')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span style="font-size: 0.8rem; color: #616161;">Nota Interna (Ocultar)</span>
+        </button>
+        
+        <button class="ann-action-btn btn-intent btn-intent-premissa" data-intent="premissa" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Restaurar Padrão" onclick="definirIntencaoSubAnotacao('premissa')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            <span style="font-size: 0.8rem;">Premissa Lógica</span>
+        </button>
+        
+        <button class="ann-action-btn btn-intent btn-intent-fundamentacao" data-intent="fundamentacao" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Base Legal Obrigatória" onclick="definirIntencaoSubAnotacao('fundamentacao')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            <span style="font-size: 0.8rem;">Fundamentação Legal</span>
+        </button>
+
+        <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 4px 0;">
+
+        <!-- OPÇÕES: Estrutura da Minuta (Mantidas, sem o título) -->
+        <button class="ann-action-btn btn-intent btn-intent-preliminar" data-intent="preliminar" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Prescrição, Inépcia, etc." onclick="definirIntencaoSubAnotacao('preliminar')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span style="font-size: 0.8rem;">Filtro / Prejudicial</span>
+        </button>
+
+        <button class="ann-action-btn btn-intent btn-intent-refutacao" data-intent="refutacao" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Derrubar argumento" onclick="definirIntencaoSubAnotacao('refutacao')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+            <span style="font-size: 0.8rem;">Refutação (Mérito)</span>
+        </button>
+
+        <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 4px 0;">
+
+        <!-- OPÇÕES: Movimentação (Mantidas, sem o título) -->
+        <button class="ann-action-btn" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Mover Posição" onclick="acionarReordenarSub()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><polyline points="8 7 12 3 16 7"></polyline><line x1="12" y1="12" x2="12" y2="3"></line></svg>
+            <span style="font-size: 0.8rem;">Reordenar Posição</span>
+        </button>
+        <button class="ann-action-btn" style="justify-content: flex-start; gap: 8px; width: 100%;" title="Transferir de Ideia" onclick="abrirModalTransferirSubAnotacao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
+            <span style="font-size: 0.8rem;">Transferir para Outra Prova</span>
+        </button>
+
+        <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 4px 0;">
+
+        <!-- AÇÕES ORIGINAIS -->
+        <button class="ann-action-btn" style="justify-content: flex-start; gap: 8px; width: 100%;" onclick="editarSubAnotacao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span style="font-size: 0.8rem;">Editar Texto</span>
+        </button>
+        <button class="ann-action-btn ann-action-delete" style="justify-content: flex-start; gap: 8px; width: 100%;" onclick="excluirSubAnotacao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span style="font-size: 0.8rem;">Excluir Ideia</span>
+        </button>
+    </div>
+    
+    <!-- TOAST DE FEEDBACK NÃO-INTRUSIVO -->
+    <div id="toast-feedback" class="toast-feedback"></div>
+    
+    <!-- BACKDROP DEDICADO PARA EDIÇÃO DE TEXTO -->
+    <div id="text-edit-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4000;" onclick="fecharModalEdicao()"></div>
+    
+    <!-- MODAL DE EDIÇÃO DE TEXTO -->
+    <div id="text-edit-modal" class="text-edit-modal" style="display:none;">
+        <div class="edit-header">✏️ Editar Texto</div>
+        
+        <div class="edit-toolbar">
+            <button type="button" class="edit-tool-btn" onclick="aplicarNegritoTextarea()" title="Negrito (Ctrl+B)">
+                <b>B</b> Negrito
+            </button>
+            <button type="button" class="edit-tool-btn" onclick="aplicarAumentoFonte(1)" title="Aumentar Fonte - 15%">
+                <span class="font-btn-label">A+</span>
+            </button>
+            <button type="button" class="edit-tool-btn" onclick="aplicarAumentoFonte(2)" title="Aumentar Fonte - 35%">
+                <span class="font-btn-label-lg">A++</span>
+            </button>
+        </div>
+        
+        <textarea id="edit-text-input" class="edit-textarea" placeholder="Selecione um trecho e aplique o negrito..."></textarea>
+        
+        <div class="edit-actions">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalEdicao()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora edit-save-btn" onclick="salvarEdicaoTexto()">✔ Salvar</button>
+        </div>
+    </div>
+
+    <div id="wizard-backdrop" onclick="cancelarRecorteWizard()"></div>
+    
+    <div id="crop-wizard-step1" class="crop-wizard-popup" style="display:none;">
+        <div class="wizard-header">📁 Passo 1 de 2 — Destino da Miniatura</div>
+        <p class="popup-label">Para qual tópico esta imagem será enviada?</p>
+        <select id="crop-topic-select" class="topic-select"></select>
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="cancelarRecorteWizard(); event.stopPropagation();">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" style="background: var(--trt-blue); color: white; border-color: var(--trt-blue);" onclick="avancarParaRecorte(); event.stopPropagation();">Confirmar e Recortar →</button>
+        </div>
+    </div>
+    
+    <div id="crop-wizard-step2" class="crop-wizard-popup" style="display:none;">
+        <div class="wizard-header">✂️ Passo 2 de 2 — Confirmar Recorte</div>
+        <div class="crop-preview-container">
+            <img id="crop-preview-img" src="" alt="Prévia do Recorte" />
+        </div>
+        <p class="popup-label" style="margin-top: 8px;">Descrição (opcional):</p>
+        <textarea id="crop-comment-input" class="popup-textarea" rows="2" style="display: block;" placeholder="Ex.: Valor indicado fl. 302..."></textarea>
+        
+        <div id="agrupamento-wizard-box" style="display:flex; flex-direction:column; gap:6px; margin: 8px 0;">
+            <p class="popup-label">Modo de Inserção:</p>
+            <div style="display:flex; gap:10px;">
+                <label style="font-size:0.8rem; cursor:pointer;">
+                    <input type="radio" name="modo_agrupar_wizard" value="nova" checked onchange="toggleAgruparWizard()"> Nova Ideia
+                </label>
+                <label style="font-size:0.8rem; cursor:pointer;">
+                    <input type="radio" name="modo_agrupar_wizard" value="agrupar" onchange="toggleAgruparWizard()"> Agrupar a Existente
+                </label>
+            </div>
+            <select id="vicio-wizard-select" class="topic-select" style="margin-top: 6px;">
+                <option value="">Selecione o Óbice/Pressuposto...</option>
+                <option value="tempestividade">Tempestividade</option>
+                <option value="preparo">Preparo (Custas/GFIP)</option>
+                <option value="representacao">Representação</option>
+                <option value="adequacao">Adequação</option>
+            </select>
+            <input type="number" id="input-ideia-wizard" class="topic-select" style="display:none; margin-top:6px;" placeholder="Nº da Ideia (ex: 1)" min="1">
+        </div>
+
+        <div id="wizard-topic-color-feedback" style="height: 0; border-radius: 4px 4px 0 0; margin-bottom: 8px; transition: height 0.2s, background-color 0.2s;"></div>
+        <div id="wizard-step-doc">
+            <p class="popup-label">Fase de Auditoria e Documento:</p>
+            <div class="phase-tabs" id="wizard-phase-tabs"></div>
+            <div id="lista-docs-wizard" class="doc-list-container" style="max-height: 140px;"></div>
+            <div class="wizard-actions">
+                <button class="chip-btn chip-cancelar" onclick="cancelarRecorteWizard(event);">✕ Cancelar</button>
+                <button class="chip-btn chip-cancelar" onclick="refazerRecorteArea(event);">↩ Refazer Área</button>
+            </div>
+        </div>
+
+        <div id="wizard-step-polo" style="display:none;">
+            <p class="popup-label">Qualifique o documento:</p>
+            <p id="wizard-doc-selecionado" class="doc-highlight"></p>
+            <!-- Contêiner dinâmico -->
+            <div id="wizard-polo-buttons-container" style="display:flex; flex-direction:column; gap:6px;">
+            </div>
+        </div>
+    </div>
+    
+    <div id="audio-player-panel" style="display: none;">
+        <div class="audio-header">
+            <span style="display: flex; align-items: center; gap: 8px;">🎙️ Oitiva de Audiência</span>
+            <button onclick="AudioManager.fecharPlayer()" title="Minimizar Player">✕</button>
+        </div>
+        
+        <div class="audio-main-controls">
+            <div class="audio-jump-box" title="Ir para tempo específico">
+                <input type="number" id="jump-h" placeholder="hh" min="0" onkeydown="AudioManager.handleJumpKey(event)"> :
+                <input type="number" id="jump-m" placeholder="mm" min="0" max="59" onkeydown="AudioManager.handleJumpKey(event)"> :
+                <input type="number" id="jump-s" placeholder="ss" min="0" max="59" onkeydown="AudioManager.handleJumpKey(event)">
+                <button onclick="AudioManager.pularParaTempo()">✔</button>
+            </div>
+            <audio id="main-audio-player" controls></audio>
+        </div>
+
+        <div class="audio-controls">
+            <button class="chip-btn chip-cancelar" onclick="AudioManager.marcarInicio()">⏱️ Marcar Início</button>
+            <button class="chip-btn chip-cancelar" onclick="AudioManager.marcarFim()">⏱️ Marcar Fim e Anotar</button>
+        </div>
+        <div class="audio-markers">
+            <span id="audio-marker-start">Início: --h --' --''</span>
+            <span id="audio-marker-end">Fim: --h --' --''</span>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 4px 0;">
+
+        <details class="audio-history-section">
+            <summary>📋 Histórico de Recortes</summary>
+            <div id="audio-history-list" class="doc-list-container"></div>
+        </details>
+    </div>
+
+    <div id="audio-classification-popup" class="crop-wizard-popup" style="display:none; z-index: 3001;">
+        <div class="wizard-header">🎙️ Classificar Trecho de Áudio</div>
+        
+        <p class="popup-label">Tópico de Destino:</p>
+        <select id="audio-topic-select" class="topic-select"></select>
+
+        <div id="audio-agrupamento-box" style="margin-top: 8px;">
+            <p class="popup-label">Modo de Inserção:</p>
+            <div style="display:flex; gap:10px;">
+                <label style="font-size:0.8rem; cursor:pointer;">
+                    <input type="radio" name="modo_agrupar_audio" value="nova" checked onchange="AudioManager.toggleAgrupar()"> Nova Ideia
+                </label>
+                <label style="font-size:0.8rem; cursor:pointer;">
+                    <input type="radio" name="modo_agrupar_audio" value="agrupar" onchange="AudioManager.toggleAgrupar()"> Agrupar a Existente
+                </label>
+            </div>
+            <input type="number" id="audio-input-ideia" class="topic-select" style="display:none; margin-top:6px;" placeholder="Nº da Ideia (ex: 1)" min="1">
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 12px 0;">
+
+        <p class="popup-label">Quem está falando?</p>
+        <select id="audio-speaker-role" class="topic-select" onchange="AudioManager.onRoleChange()">
+            <option value="">Selecione o Orador...</option>
+            <option value="Parte Autora">Parte Autora (Depoimento)</option>
+            <option value="Parte Ré">Parte Ré (Depoimento)</option>
+            <option value="Preposto">Preposto</option>
+            <option value="Juízo">Magistrado / Juízo</option>
+            <option value="Advogado">Advogado(a)</option>
+            <option value="Testemunha">Testemunha</option>
+        </select>
+
+        <div id="audio-speaker-side-box" style="display: none; margin-top: 8px;">
+            <p class="popup-label">Qualificado(a) por qual polo?</p>
+            <select id="audio-speaker-side" class="topic-select">
+                <option value="Parte Autora">Parte Autora</option>
+                <option value="Parte Ré">Parte Ré</option>
+            </select>
+        </div>
+
+        <p class="popup-label" style="margin-top: 12px;">Observação / Contexto do Assessor (opcional):</p>
+        <textarea id="audio-comment" class="popup-textarea" style="display: block; min-height: 60px;" placeholder="Registre o propósito deste trecho (Ex: Confessa que não usava EPI...)"></textarea>
+
+        <p class="popup-label" style="margin-top: 12px;">Degravação Literal (opcional):</p>
+        <textarea id="audio-degravacao" class="popup-textarea" style="display: block; min-height: 80px;" placeholder="Digite a transcrição exata das palavras ditas na audiência..."></textarea>
+
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="AudioManager.cancelarAnotacao()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" style="background: var(--trt-blue); color: white; border-color: var(--trt-blue);" onclick="AudioManager.salvarRecorte()">✔ Confirmar Anotação</button>
+        </div>
+    </div>
+
+    <!-- MENU FLUTUANTE DA LOGO -->
+    <div id="juris-menu" class="annotation-context-menu" style="flex-direction: column; min-width: 150px; padding: 8px;">
+        <!-- NOVO: Toggle do Cronômetro -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; margin-bottom: 4px;">
+            <span style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #555; font-weight: 600;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px; height:14px; flex-shrink:0;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Cronômetro
+            </span>
+            <label class="toggle-switch-minimal">
+                <input type="checkbox" id="toggle-cronometro" checked onchange="TimeTrackerManager.toggleVisibility(true)">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <button class="doc-btn" style="border:none; text-align:left; margin-bottom: 4px;" onclick="abrirModalGerenciarAbas()">📑 Gerenciar Abas</button>
+        
+        <!-- Novo Submenu de Temas -->
+        <button class="doc-btn" style="border:none; text-align:left; margin-bottom: 4px;" onclick="toggleSubmenuTemas()">🎨 Temas ▾</button>
+        <div id="submenu-temas" style="display:none; padding-left: 12px; border-left: 2px solid #eee; margin-bottom: 4px; flex-direction: column; gap: 12px;">
+            
+            <!-- Submenu: Processo (PDF) -->
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.7rem; color: #888; font-weight: bold; text-transform: uppercase;">📄 Processo (PDF)</span>
+                <button class="doc-btn neutro" style="border:none; text-align:left; padding: 6px 12px;" onclick="aplicarTema('processo', 'jasmine')">🌕 Fundo Jasmine</button>
+                <button class="doc-btn neutro" style="border:none; text-align:left; padding: 6px 12px;" onclick="aplicarTema('processo', 'white')">⬜ Fundo Branco</button>
+            </div>
+
+            <!-- Submenu: Anotações -->
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.7rem; color: #888; font-weight: bold; text-transform: uppercase;">📝 Anotações</span>
+                <button class="doc-btn neutro" style="border:none; text-align:left; padding: 6px 12px;" onclick="aplicarTema('anotacoes', 'jasmine')">🌕 Fundo Jasmine</button>
+                <button class="doc-btn neutro" style="border:none; text-align:left; padding: 6px 12px;" onclick="aplicarTema('anotacoes', 'white')">⬜ Fundo Branco</button>
+            </div>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 4px 0;">
+        <button class="doc-btn neutro" style="border:none; text-align:left;" onclick="abrirModalAjuda()">📖 Guia da IA</button>
+    </div>
+
+    <!-- BACKDROP DEDICADO PARA O MODAL DE ABAS (Resolve Alerta 1) -->
+    <div id="abas-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4004;" onclick="fecharModalGerenciarAbas()"></div>
+
+    <!-- MODAL DE GERENCIAMENTO DE ABAS -->
+    <div id="modal-gerenciar-abas" class="crop-wizard-popup" style="display:none; z-index: 4005;">
+        <div class="wizard-header">📑 Gerenciar Abas (Tópicos)</div>
+        <p class="popup-label">Selecione uma aba para editar ou excluir:</p>
+        <div id="lista-abas-gerenciador" class="doc-list-container" style="max-height: 250px; margin-bottom: 12px;">
+            <!-- Preenchido via JS -->
+        </div>
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalGerenciarAbas()">✕ Fechar</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- NOVOS MODAIS: TESES E SMART MOVE           -->
+    <!-- ========================================== -->
+    
+    <!-- Modal Editar Tese -->
+    <div id="modal-editar-tese" class="crop-wizard-popup" style="display:none; z-index: 4005;">
+        <div class="wizard-header">💡 Nomear Tese (Ideia <span id="tese-ideia-num"></span>)</div>
+        <p class="popup-label">Descreva brevemente a tese jurídica deste grupo de provas:</p>
+        <textarea id="input-texto-tese" class="popup-textarea" style="display:block;" rows="3" placeholder="Ex: Nulidade por cerceamento de defesa..."></textarea>
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalTese()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" onclick="salvarTese()">✔ Salvar Tese</button>
+        </div>
+    </div>
+
+    <!-- Modal Smart Move (Reordenar) -->
+    <div id="modal-smart-move" class="crop-wizard-popup" style="display:none; z-index: 4005;">
+        <div class="wizard-header">🔄 Reordenar / Mover Prova</div>
+        <p class="popup-label">Para onde deseja mover esta prova?</p>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 8px; margin-top: 8px;">
+            <label style="font-size:0.8rem; cursor:pointer;">
+                <input type="radio" name="smart_move_tipo" value="nova" checked onchange="toggleSmartMoveInput()"> Transformar em Nova Ideia
+            </label>
+            <label style="font-size:0.8rem; cursor:pointer;">
+                <input type="radio" name="smart_move_tipo" value="existente" onchange="toggleSmartMoveInput()"> Agrupar a Ideia Existente
+            </label>
+        </div>
+        
+        <!-- Dica textual dinâmica e campo de input que agora não será mais escondido -->
+        <p id="smart-move-hint" style="font-size: 0.75rem; color: #666; margin-bottom: 4px;">Deixe em branco para ir para o final, ou digite a posição exata:</p>
+        <input type="number" id="input-smart-move-destino" class="topic-select" placeholder="Nova Posição (Ex: 1)" min="1">
+        
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalSmartMove()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" onclick="confirmarSmartMove()">✔ Confirmar</button>
+        </div>
+    </div>
+
+    <!-- BACKDROP E MODAL DO GUIA METODOLÓGICO -->
+    <div id="ajuda-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4004;" onclick="fecharModalAjuda()"></div>
+
+    <div id="modal-ajuda-intencoes" class="crop-wizard-popup" style="display:none; z-index: 4005; max-width: 800px; width: 90vw; height: 85vh; padding: 0; overflow: hidden;">
+        <div class="wizard-header" style="padding: 16px 20px 8px; margin: 0; background: white;">
+            🧠 Guia Metodológico: Nós de Ideia
+            <button style="float:right; background:none; border:none; cursor:pointer; font-size:1.2rem; color:#999;" onclick="fecharModalAjuda()">✕</button>
+        </div>
+        <iframe src="ai_guia-ia.html" style="width: 100%; height: calc(100% - 60px); border: none; background: #fdfdfd;"></iframe>
+    </div>
+
+    <!-- Backdrop dedicado para Reordenação (Evita conflito com o Wizard) -->
+    <div id="reordenar-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4004;" onclick="fecharModalReordenar()"></div>
+
+    <!-- Modal Reordenar Posição -->
+    <div id="modal-reordenar" class="crop-wizard-popup" style="display:none; z-index: 4005;">
+        <div class="wizard-header">↕️ Reposicionar Item</div>
+        <p class="popup-label">Digite a nova posição que este item deve assumir:</p>
+        <p style="font-size: 0.8rem; color: #666; margin-bottom: 8px;">Os demais itens serão renumerados automaticamente.</p>
+        <input type="number" id="input-nova-posicao" class="topic-select" placeholder="Ex: 2" min="1">
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalReordenar()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" onclick="confirmarReordenacaoPosicao()">✔ Confirmar</button>
+        </div>
+    </div>
+
+    <!-- BACKDROP E MODAL: TRANSFERÊNCIA DE SUB-NÓS -->
+    <div id="transferir-sub-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4004;" onclick="fecharModalTransferirSub()"></div>
+
+    <div id="modal-transferir-sub" class="crop-wizard-popup" style="display:none; z-index: 4005;">
+        <div class="wizard-header">🚀 Transferir Nó de Ideia</div>
+        <p class="popup-label">Para qual Ideia Principal este nó deve ser enviado?</p>
+        <p style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">Digite o número da ideia de destino (Ex: 2).</p>
+        
+        <input type="number" id="input-transferir-sub-destino" class="topic-select" placeholder="Nº da Ideia (Ex: 2)" min="1" oninput="carregarSubAlvosTransferencia()">
+        
+        <div id="transfer-sub-target-box" style="display:none; margin-top: 12px; flex-direction: column; gap: 6px;">
+            <p class="popup-label">Esta ideia agrupa várias provas. Escolha o destino exato:</p>
+            <select id="select-transferir-sub-alvo" class="topic-select"></select>
+        </div>
+
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalTransferirSub()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" onclick="confirmarTransferenciaSub()">✔ Confirmar</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- FABs DE NAVEGAÇÃO DO PAINEL DE ANOTAÇÕES  -->
+    <!-- Oculto por padrão; gerenciado por trocarAba() e checkScrollFabState() -->
+    <!-- ========================================== -->
+    <div id="scroll-fab-container" class="scroll-fab-container" style="display: none;">
+        <!-- [NOVO] Sandbox para os botões de índice de ideias -->
+        <div id="idea-markers-list"></div>
+        
+        <!-- ESTRELAS (Favoritos Livres) -->
+        <button id="fab-fav3" class="fab-btn fab-shortcut is-empty" onclick="ShortcutManager.handleClick('fav3', event)" title="Favorito 3 (Pastel)" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </button>
+        <button id="fab-fav2" class="fab-btn fab-shortcut is-empty" onclick="ShortcutManager.handleClick('fav2', event)" title="Favorito 2 (Fúcsia)" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </button>
+        <button id="fab-fav1" class="fab-btn fab-shortcut is-empty" onclick="ShortcutManager.handleClick('fav1', event)" title="Favorito 1 (Ouro)" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </button>
+
+        <!-- ALVOS (Embargos de Declaração) -->
+        <button id="fab-embargos-autora" class="fab-btn fab-shortcut is-empty" onclick="ShortcutManager.handleClick('embargosAutora', event)" title="Embargos (Autora)" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+        </button>
+        <button id="fab-embargos-reu" class="fab-btn fab-shortcut is-empty" onclick="ShortcutManager.handleClick('embargosReu', event)" title="Embargos (Ré 1)" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+        </button>
+        <button id="fab-embargos-reu2" class="fab-btn fab-shortcut is-empty" onclick="ShortcutManager.handleClick('embargosReu2', event)" title="Embargos (Ré 2)" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+        </button>
+
+        <!-- BALANÇA (Acórdão Embargado) -->
+        <button id="fab-acordao" class="fab-btn fab-shortcut is-empty" style="margin-bottom: 8px; display:none;" onclick="ShortcutManager.handleClick('acordao', event)" title="Acórdão Embargado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                <path d="M7 21h10"></path>
+                <path d="M12 3v18"></path>
+                <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
+            </svg>
+        </button>
+        <button id="btn-scroll-top" class="fab-btn is-hidden" onclick="rolarParaTopo()" title="Voltar ao Topo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+        </button>
+        <button id="btn-scroll-bottom" class="fab-btn is-hidden" onclick="rolarParaFinal()" title="Ir para o Final">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
+    </div>
+
+    <!-- DEPENDÊNCIAS DE RENDERIZAÇÃO E ESTADO (Keyed Morphing) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/morphdom/2.7.4/morphdom-umd.min.js"></script>
+    <script src="js/ai_store.js"></script>
+    
+    <script src="js/ai_backup-manager.js"></script>
+    <script src="js/ai_topics-manager.js"></script>
+    <script src="js/ai_balanca-manager.js"></script>
+    <script src="js/ai_interaction-tools.js"></script>
+    <script src="js/ai_audio-manager.js"></script>
+    <script src="js/ai_annotation-actions.js"></script>
+    <script src="js/ai_export-manager.js"></script>
+    <script src="js/ai_pdf-engine.js"></script>
+    
+    <!-- NOVO: Módulo agnóstico de Leitura Automatizada do PJe -->
+    <script src="js/ai_pje-parser.js"></script>
+    
+<script src="js/ai_app-core.js"></script>
+<script src="js/ai_acervo-controller.js"></script>
+<script src="js/ai_recommendation-service.js"></script>
+
+    
+    <div id="quick-intent-tooltip" class="quick-tooltip" style="display: none;"></div>
+    
+    <!-- MODAL SMART SHORTCUTS -->
+    <div id="shortcut-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4004;" onclick="ShortcutManager.fecharModal()"></div>
+    <div id="shortcut-modal" class="crop-wizard-popup" style="display:none; z-index: 4005;">
+        <div class="wizard-header">📍 Configurar Atalho</div>
+        <p class="popup-label" id="shortcut-modal-title">Página do documento:</p>
+        <p style="font-size: 0.8rem; color: #666; margin-bottom: 8px;">Deixe em branco para remover o atalho.</p>
+        <input type="number" id="shortcut-page-input" class="topic-select" placeholder="Ex: 15" min="1">
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="ShortcutManager.fecharModal()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" style="background: var(--trt-blue); color: white; border-color: var(--trt-blue);" onclick="ShortcutManager.salvarModal()">✔ Confirmar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE ATIVAÇÃO DE BACKUP OBRIGATÓRIO -->
+    <div id="backup-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 5000;"></div>
+    <div id="modal-ativar-backup" class="crop-wizard-popup" style="display:none; z-index: 5001; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); min-width: 350px;">
+        <div class="wizard-header backup-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Ativar Salvamento Automático
+        </div>
+        <p class="popup-label" style="margin-top: 10px; font-size: 0.95rem; text-align: center;">O PDF foi carregado com sucesso!</p>
+        <p style="font-size: 0.85rem; color: #555; margin-bottom: 16px; text-align: center;">Para evitar a perda de dados, crie agora o arquivo de backup desta sessão.</p>
+        <div class="wizard-actions" style="justify-content: center;">
+            <button class="chip-btn chip-autora" style="background: #2e7d32; color: white; border: none; padding: 12px 24px; font-size: 1rem;" onclick="acionarCriacaoBackup()">
+                ✔ Criar Arquivo de Backup
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-salvar-modelo" class="crop-wizard-popup" style="display:none; z-index: 4005; min-width: 380px;">
+        <div class="wizard-header">Salvar no Acervo</div>
+        
+        <div style="display:flex; gap:10px; margin: 12px 0;">
+            <label style="font-size:0.85rem; cursor:pointer; color: var(--text-dark);">
+                <input type="radio" name="modo_salvar_modelo" value="novo" checked onchange="toggleModoSalvarModelo()"> Criar Novo Modelo
+            </label>
+            <label style="font-size:0.85rem; cursor:pointer; color: var(--text-dark);">
+                <input type="radio" name="modo_salvar_modelo" value="existente" onchange="toggleModoSalvarModelo()"> Agrupar a Existente
+            </label>
+        </div>
+
+        <div id="box-modelo-novo">
+            <p class="popup-label">Nome do novo modelo:</p>
+            <input type="text" id="input-nome-modelo" class="topic-select" placeholder="Ex: Nulidade por Cerceamento" autocomplete="off">
+        </div>
+
+        <div id="box-modelo-existente" style="display: none;">
+            <p class="popup-label">Buscar modelo existente:</p>
+            <input type="text" id="input-busca-modelo" class="topic-select" placeholder="Digite para buscar..." autocomplete="off" oninput="filtrarListaUIDebounced(this.value, 'lista-modelos-salvar')">
+            <div id="lista-modelos-salvar" class="doc-list-container" style="margin-top: 8px; max-height: 120px;">
+            </div>
+        </div>
+
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalSalvarModelo()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" style="background: var(--trt-blue); color: white; border: none;" onclick="confirmarSalvarModelo()">✔ Confirmar</button>
+        </div>
+    </div>
+
+    <div id="modal-acervo-inserir" class="crop-wizard-popup" style="display:none; z-index: 4005;">
+        <div class="wizard-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Acervo de Modelos</span>
+            <button style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; padding: 0 4px;" onclick="fecharModalAcervo()" title="Fechar Acervo">✕</button>
+        </div>
+
+        <!-- CAMADA 1: VISUALIZAÇÃO EM LISTA -->
+        <div id="acervo-list-view">
+            <div id="acervo-search-wrapper" style="display: flex; gap: 8px; margin-bottom: 12px; width: 100%;">
+                <input type="text" id="input-pesquisa-acervo" class="topic-select" placeholder="Pesquisar modelo ou tag..." style="flex: 1;" oninput="filtrarListaUIDebounced(this.value, 'lista-acervo-geral')">
+                <button class="acervo-action-btn tag-btn-creme" title="Gerenciar Tags" onclick="abrirModalGerenciarTags()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="banner-filtro-ia" class="banner-ia-filter" style="display:none;">
+                <span class="banner-ia-text">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Recomendações da IA para esta tese
+                </span>
+                <button class="chip-btn btn-limpar-ia" onclick="limparFiltroIAAcervo()">✕ Limpar</button>
+            </div>
+            
+            <div id="lista-acervo-geral" class="doc-list-container" style="max-height: 40vh; overflow-y: auto; position: relative;">
+                <!-- WRAPPER: Apenas este elemento sofrerá innerHTML = '' -->
+                <div id="acervo-items-wrapper" style="display: flex; flex-direction: column;"></div>
+                
+                <!-- SENTINELA: Blindada, sempre no final do container de scroll -->
+                <div id="sentinela-scroll-acervo" style="height: 20px; width: 100%; display: none;"></div>
+            </div>
+        </div>
+
+        <!-- CAMADA 2: VISUALIZAÇÃO DE FOCO (Inicia oculta via CSS) -->
+        <div id="acervo-focus-view" style="display: none; flex-direction: column; opacity: 0;">
+            
+            <!-- Header de Foco -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                <button class="chip-btn chip-cancelar" style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="window.desativarModoFocoAcervo()">← Voltar</button>
+                <span id="focus-modelo-titulo" style="font-weight: 700; color: var(--trt-blue); font-size: 0.95rem;"></span>
+            </div>
+
+            <!-- Área de Preview dos Nós -->
+            <div id="box-preview-container" style="background: #fafafa; border: 1px solid var(--border-color); border-radius: 6px; display: flex; flex-direction: column; transition: all 0.3s ease;">
+                <!-- Header do Preview com botão Expandir -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; background: #e8ecef; border-bottom: 1px solid var(--border-color); border-radius: 6px 6px 0 0;">
+                    <span style="font-size: 0.75rem; font-weight: 600; color: #555;">Conteúdo do Modelo</span>
+                    <button class="acervo-action-btn" title="Expandir Tela Cheia" onclick="window.toggleFullscreenAcervo()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px; height:16px;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                    </button>
+                </div>
+                <!-- Lista de Nós -->
+                <div id="box-preview-acervo" style="padding: 12px; font-size: 0.85rem; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Roteamento Legado: Área de Destino -->
+            <div id="box-destino-dinamico-acervo" style="display:none; margin-top: 16px;">
+                <p id="label-destino-acervo" class="popup-label">Destino da Inserção:</p>
+                <div id="destino-acervo-card" style="display: none; margin-top: 8px;">
+                    <input type="number" id="input-destino-acervo-card" class="topic-select" placeholder="Ex: 2 (Nº da Ideia Principal)" min="1">
+                </div>
+                <div id="destino-acervo-tese" style="display: none; margin-top: 8px;">
+                    <select id="select-destino-acervo-tese" class="topic-select">
+                        <option value="">Selecione uma Tese existente...</option>
+                    </select>
+                    <p id="aviso-sem-tese" style="display:none; color:#c62828; font-size:0.75rem; margin-top:4px;">Não há teses nomeadas neste tópico. Crie uma tese no painel primeiro.</p>
+                </div>
+                <div id="destino-acervo-global" style="display: none; margin-top: 8px; padding: 8px; background: #e3f2fd; border-radius: 6px; border: 1px solid #90caf9;">
+                    <p style="font-size: 0.8rem; color: #0d47a1; margin: 0;">🌐 Este modelo será aplicado diretamente às <strong>Diretrizes Globais</strong> do tópico atual.</p>
+                </div>
+            </div>
+
+            <div class="wizard-actions" style="margin-top: 16px;">
+                <button class="chip-btn chip-cancelar" onclick="fecharModalAcervo()">✕ Fechar Modal</button>
+                <button class="chip-btn chip-autora" id="btn-inserir-acervo" style="display:none; background: var(--trt-blue); color: white; border: none;" onclick="confirmarInsercaoAcervo()">✔ Confirmar Inserção</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDIÇÃO DO ACERVO -->
+    <div id="modal-editar-modelo-acervo" class="crop-wizard-popup" style="display:none; z-index: 4006;">
+        <!-- UI RESTRUTURADA: Flexbox para gestão de ações globais do Modelo -->
+        <div class="wizard-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                ✏️ <span id="edit-modelo-nome" style="color:var(--text-dark);"></span>
+                <button class="acervo-action-btn" title="Renomear Modelo" style="padding: 4px;" onclick="acionarRenomearModeloAtual()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--trt-blue-mid)" stroke-width="2" style="width: 16px; height: 16px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+            </div>
+            <button class="acervo-action-btn delete-btn" title="Excluir Modelo Definitivamente" style="padding: 4px; color: #c62828;" onclick="acionarExcluirModeloAtual()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+        </div>
+
+        <div id="area-alterar-escopo" style="margin-top: 12px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: #fff;">
+            <p class="popup-label" style="margin-bottom: 6px;">Nível Hierárquico do Modelo:</p>
+            <select id="select-edicao-escopo" class="topic-select" onchange="alterarEscopoModeloAtual(this.value)">
+                <option value="card">📄 Card de Ideia (Padrão)</option>
+                <option value="tese">⚖️ Diretriz de Tese</option>
+                <option value="global">🌐 Diretriz Global</option>
+            </select>
+        </div>
+
+        <div id="area-associar-tags" style="margin-top: 12px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: #fafafa;">
+            <p class="popup-label" style="margin-bottom: 6px;">Etiquetas (Tags) do Modelo:</p>
+            <div id="container-checkboxes-tags" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <!-- Checkboxes gerados via JS -->
+            </div>
+        </div>
+        
+        <div id="lista-edicao-nos-acervo" class="doc-list-container" style="max-height: 50vh; overflow-y: auto; padding: 10px; margin-top: 12px;">
+            <!-- Preenchido via JS -->
+        </div>
+
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalEdicaoAcervo()">✕ Fechar e Voltar</button>
+        </div>
+    </div>
+
+    <!-- MODAL GERENCIAR TAGS (HTML Limpo) -->
+    <div id="modal-gerenciar-tags" class="crop-wizard-popup" style="display:none; z-index: 4007; min-width: 380px;">
+        <div class="wizard-header">🏷️ Gerenciar Tags Globais</div>
+        
+        <!-- Área da Barra de Busca e Botão -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: stretch;">
+            <input type="text" id="input-nova-tag" class="topic-select" placeholder="Digite uma nova tag (Ex: Dano Moral)" style="flex: 1; margin: 0;">
+            <button class="chip-btn chip-autora" style="width: auto; padding: 0 16px; background: var(--creme-neon-bg, #FDFCE5); color: var(--creme-neon-text, #4A4A32); border: 1px solid var(--creme-neon-border, #EBE6C5);" onclick="adicionarTagGlobal()">+ Adicionar</button>
+        </div>
+        
+        <!-- Área da Lista -->
+        <div id="lista-tags-globais" class="doc-list-container" style="max-height: 180px; padding: 8px; display: flex; flex-direction: column; gap: 6px;">
+            <!-- Lista de tags será injetada aqui via JS -->
+        </div>
+        
+        <div class="wizard-actions" style="justify-content: space-between;">
+            <button class="chip-btn chip-autora" style="background: var(--trt-blue); color: white; border: none;" onclick="exportarBaseParaNotebookLM(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 6px; display: inline-block; vertical-align: text-bottom;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Exportar Base para IA
+            </button>
+            <button class="chip-btn chip-cancelar" onclick="fecharModalGerenciarTags()">✕ Voltar ao Acervo</button>
+        </div>
+    </div>
+
+    <!-- PAINEL DE ACESSO SEGURO (FIREBASE) -->
+    <div id="login-menu" class="floating-panel-base" style="display: none; flex-direction: column; min-width: 220px; padding: 16px; gap: 10px;">
+        <div style="font-size: 0.9rem; font-weight: bold; color: var(--trt-blue); margin-bottom: 4px; text-align: center;">
+            Acesso Seguro
+        </div>
+        
+        <!-- Loader visual temporário enquanto o Firebase verifica a sessão -->
+        <div id="login-loading-state" style="text-align: center; color: #888; font-size: 0.85rem; display: block;">
+            Verificando sessão...
+        </div>
+
+        <!-- ESTADO 1: Deslogado (Inicia oculto) -->
+        <div id="login-form-state" style="display: none; flex-direction: column; gap: 10px;">
+            <input type="email" id="login-email" class="login-input" placeholder="Seu E-mail" autocomplete="email">
+            <input type="password" id="login-senha" class="login-input" placeholder="Sua Senha" autocomplete="current-password">
+            <button class="chip-btn chip-autora" style="background: var(--trt-blue); color: white; border-color: var(--trt-blue); margin-top: 4px;" onclick="FirebaseAuth.realizarLogin()">
+                ✔ Autenticar
+            </button>
+        </div>
+
+        <!-- ESTADO 2: Logado (Inicia oculto) -->
+        <div id="login-logged-state" style="display: none; flex-direction: column; gap: 10px; text-align: center;">
+            <p style="font-size: 0.85rem; color: #555;">Sessão ativa. Conectado à nuvem.</p>
+            <button class="chip-btn chip-re" style="margin-top: 4px;" onclick="FirebaseAuth.realizarLogout()">
+                Sair da Conta
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DA BALANÇA DA JUSTIÇA -->
+    <input type="file" id="upload-html-balanca" accept=".html" style="display: none;" onchange="BalancaManager.processarUpload(event)">
+
+    <div id="balanca-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: var(--z-wizard-backdrop);" onclick="BalancaManager.fecharPainel()"></div>
+    <div id="balanca-painel" class="crop-wizard-popup" style="display:none; z-index: var(--z-wizard-modal); width: 92vw; height: 88vh; max-width: 1300px; padding: 0; overflow: hidden; flex-direction: column; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        
+        <div class="wizard-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: white; margin: 0; border-bottom: 2px solid var(--border-color);">
+            <span style="font-weight: 700; color: var(--trt-blue);">⚖️ Dossiê Recursal</span>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <!-- Opção legada escondida de forma elegante -->
+                <button class="chip-btn" style="background: none; border: 1px dashed #ccc; color: #888; padding: 6px 10px; font-size: 0.75rem;" title="Importar arquivo HTML antigo" onclick="document.getElementById('upload-html-balanca').click()">Importar Legado</button>
+                
+                <!-- Novo botão principal de substituição -->
+                <button class="chip-btn chip-cancelar" style="padding: 6px 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;" onclick="BalancaManager.resetToGenerator()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 2.13-5.87L2 8"></path></svg>
+                    Novo Dossiê
+                </button>
+                
+                <button style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;" onclick="BalancaManager.fecharPainel()">✕</button>
+            </div>
+        </div>
+
+        <!-- Iframe agora é sempre renderizado (eliminamos a div #balanca-vazia) -->
+        <iframe id="balanca-iframe" style="flex: 1; border: none; width: 100%; display: block; background: var(--bg-page);" sandbox="allow-same-origin allow-scripts allow-forms allow-modals"></iframe>
+    </div>
+
+    <!-- MODAIS DO TIME TRACKER -->
+    <div id="modal-tracker-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.25); z-index: 4004;" onclick="TimeTrackerManager.fecharModal()"></div>
+
+    <div id="modal-tracker-config" class="crop-wizard-popup" style="display:none; z-index: 4005; min-width: 320px;">
+        <div class="wizard-header" id="tracker-modal-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px; height:18px; margin-right:6px; vertical-align:middle;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Iniciar Contagem
+        </div>
+        
+        <div id="tracker-start-step">
+            <p class="popup-label" style="margin-bottom: 8px;">Classifique a complexidade do tópico:</p>
+            <select id="tracker-complexity-select" class="topic-select">
+                <option value="simples">Simples (Metas: 45m / 1h / 1h30)</option>
+                <option value="medio">Médio (Metas: 1h / 1h30 / 1h45)</option>
+                <option value="complexo">Complexo (Metas: 1h30 / 2h / 2h30)</option>
+            </select>
+            <div class="wizard-actions" style="margin-top: 16px;">
+                <button class="chip-btn chip-cancelar" onclick="TimeTrackerManager.fecharModal()">Cancelar</button>
+                <button class="chip-btn chip-autora" style="background: var(--trt-blue); color: white; border-color: var(--trt-blue);" onclick="TimeTrackerManager.iniciar()">Iniciar Análise</button>
+            </div>
+        </div>
+
+        <div id="tracker-stop-step" style="display:none;">
+            <p class="popup-label" style="margin-bottom: 16px; text-align: center; font-size: 0.9rem;">Deseja encerrar a contagem deste tópico?</p>
+            <div class="wizard-actions" style="justify-content: center;">
+                <button class="chip-btn chip-cancelar" onclick="TimeTrackerManager.fecharModal()">Continuar Contando</button>
+                <button class="chip-btn chip-re" onclick="TimeTrackerManager.parar()">Sim, Encerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DO GERADOR DE CONTEXTO IA -->
+    <div id="gerador-contexto-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4004;" onclick="fecharModalGeradorContexto()"></div>
+
+    <div id="modal-gerador-contexto" class="crop-wizard-popup" style="display:none; z-index: 4005; width: 90vw; max-width: 800px;">
+        <div class="wizard-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>🧩 Gerador de Contexto para IA</span>
+            <button style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;" onclick="fecharModalGeradorContexto()">✕</button>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px;">
+            
+            <div>
+                <p class="popup-label">1. Histórico da Minuta (Opcional):</p>
+                <p style="font-size: 0.75rem; color: #666; margin-bottom: 4px;">Texto já redigido. (Salvo automaticamente na sessão)</p>
+                <textarea id="ctx-minuta-anterior" class="popup-textarea" style="display: block; min-height: 80px;" placeholder="Cole o relatório/fundamentação anterior aqui..." oninput="window.salvarRascunhoContextoDebounced()"></textarea>
+            </div>
+
+            <!-- NOVA SEÇÃO: USO INTERNO (CHATJT / FLASH) PROTEGIDA POR LGPD -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; background: #fff3e0; padding: 12px; border-radius: 6px; border: 1px dashed #ffb74d; position: relative;">
+                <div style="grid-column: span 2; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p class="popup-label" style="color: #e65100; margin: 0;">⚠️ Documentos na Íntegra (Uso Interno - ChatJT)</p>
+                        <p style="font-size: 0.75rem; color: #d84315; margin-top: 4px;">Estes dados são enviados EXCLUSIVAMENTE pelo botão laranja. Eles são apagados ao trocar de processo.</p>
+                    </div>
+                    <!-- Novo botão de Quick Clear -->
+                    <button class="chip-btn" style="background: white; border: 1px solid #ffcc80; color: #d84315; font-size: 0.75rem; padding: 4px 8px;" onclick="limparAreaInternaLGPD()">🧹 Limpar Área</button>
+                </div>
+                <div>
+                    <p class="popup-label" style="color: #e65100;">Inteiro Teor da Sentença/Despacho:</p>
+                    <textarea id="ctx-teor-sentenca" class="popup-textarea" style="display: block; min-height: 100px; border-color: #ffcc80;" placeholder="Cole a decisão agravada aqui..." oninput="window.salvarRascunhoContextoDebounced()"></textarea>
+                </div>
+                <div>
+                    <p class="popup-label" style="color: #e65100;">Inteiro Teor do Recurso:</p>
+                    <textarea id="ctx-teor-recurso" class="popup-textarea" style="display: block; min-height: 100px; border-color: #ffcc80;" placeholder="Cole o agravo aqui..." oninput="window.salvarRascunhoContextoDebounced()"></textarea>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 14px;">
+                <div>
+                    <p class="popup-label">2. Metadados do PJe:</p>
+                    <textarea id="ctx-metadados" class="popup-textarea textarea-readonly" style="display: block; min-height: 120px;" readonly></textarea>
+                </div>
+                <div>
+                    <p class="popup-label">3. Matriz do Juris Notes:</p>
+                    <textarea id="ctx-diretrizes" class="popup-textarea textarea-readonly" style="display: block; min-height: 120px;" readonly></textarea>
+                </div>
+            </div>
+
+            <div>
+                <p class="popup-label">4. Rascunho da IA (Opcional):</p>
+                <textarea id="ctx-rascunho-ia" class="popup-textarea" style="display: block; min-height: 80px;" placeholder="Cole aqui respostas prévias da IA..." oninput="window.salvarRascunhoContextoDebounced()"></textarea>
+            </div>
+            
+        </div>
+
+        <!-- REVISÃO: Ações segregadas com indicação passiva de segurança -->
+        <div class="wizard-actions" style="align-items: center;">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalGeradorContexto()">Cancelar</button>
+            <div style="flex-grow: 1;"></div> <!-- Spacer -->
+            
+            <button class="chip-btn" id="btn-copiar-contexto-interno" style="background: #f57c00; color: white; border: none; padding: 10px 16px; display: flex; flex-direction: column; align-items: center;" onclick="gerarECopiarContexto('interno')">
+                <span style="font-weight: bold;">📋 Copiar p/ ChatJT</span>
+                <span style="font-size: 0.65rem; opacity: 0.9;">Inclui Inteiros Teores</span>
+            </button>
+            
+            <button class="chip-btn chip-autora" id="btn-copiar-contexto-pro" style="background: var(--trt-blue); color: white; border: none; padding: 10px 16px; display: flex; flex-direction: column; align-items: center;" onclick="gerarECopiarContexto('pro')">
+                <span style="font-weight: bold;">🛡️ Copiar Pacote PRO</span>
+                <span style="font-size: 0.65rem; opacity: 0.9;">Ignora área amarela (Seguro)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- BACKDROP E MODAL: PROMPT NOTEBOOKLM (Z-index 4008+ para sobrepor as Tags em 4007) -->
+    <div id="prompt-notebooklm-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4008;" onclick="fecharModalPromptNotebookLM()"></div>
+
+    <div id="modal-prompt-notebooklm" class="crop-wizard-popup" style="display:none; z-index: 4009; max-width: 750px; width: 90vw;">
+        <div class="wizard-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>🤖 Exportação Concluída! Auditoria no NotebookLM</span>
+            <button style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;" onclick="fecharModalPromptNotebookLM()">✕</button>
+        </div>
+        
+        <p class="popup-label" style="margin-top: 12px;">Seu arquivo de conhecimento foi baixado.</p>
+        <p style="font-size: 0.85rem; color: #555; margin-bottom: 12px;">Suba o arquivo .txt gerado no <strong>Google NotebookLM</strong> e cole o comando abaixo para auditar e organizar sua taxonomia:</p>
+        
+        <!-- O style display:block é vital aqui para anular a ocultação padrão da classe genérica -->
+        <textarea id="textarea-prompt-notebooklm" class="popup-textarea textarea-readonly" style="display: block; min-height: 320px; font-family: monospace; font-size: 0.8rem; line-height: 1.4; padding: 12px;" readonly># PERSONA E CONTEXTO
+Atue como um Engenheiro de Conhecimento e Especialista em Taxonomia Jurídica.
+Como fonte de conhecimento, você tem um arquivo do sistema ("Juris Notes") contendo uma base de Modelos Recursais e de Teses do gabinete. Esta base JÁ PASSOU por uma primeira rodada de organização. 
+
+# A REGRA DE OURO: O FILTRO DE TOLERÂNCIA
+Sua missão NÃO é buscar a perfeição absoluta ou criticar cada detalhe. Você deve atuar com um "Filtro de Bom Senso". 
+Se um modelo já possui um nome descritivo, claro e funcional (ex: aborda o tema e a especificidade de forma compreensível), considere-o [ADEQUADO] e NÃO o inclua na lista de correções. 
+Seu foco exclusivo deve ser apontar os "Outliers": nomes genéricos demais, confusos, totalmente fora de padrão lógico ou que prejudiquem a localização do arquivo.
+
+# ENTREGAS ESPERADAS
+Gere um Relatório de Auditoria Cirúrgica com a seguinte estrutura:
+
+1. Diagnóstico de Nomenclatura e Padrão Sugerido
+Apresente qual é a estrutura lógica ideal que você utilizou como régua para essa auditoria (exemplo: [Tema Principal] - [Subtema] - [Especificidade]).
+
+2. Tabela de Resgate (De -> Para)
+Apresente uma tabela APENAS com os modelos que estão em estado [CRÍTICO] de nomenclatura. 
+Regra estrita: Se o nome atual já for aceitável e claro, ele está expressamente proibido de aparecer nesta tabela. 
+Colunas: "Nome Problemático Atual" | "Sugestão de Novo Nome" | "Motivo da Alteração".
+
+3. Auditoria de Tags e Categorização
+* Unificação de Ruídos: Identifique apenas sinônimos óbvios ou tags fragmentadas que estejam poluindo a base (ex: juntar "Dano Moral" e "Danos Morais") e sugira a fusão.
+* Resgate de Órfãos: Liste os modelos exportados com o status [SEM TAGS]. Leia o núcleo do texto (nós de ideia) desses modelos e sugira 2 a 3 tags precisas para cada um.
+
+4. Árvore Taxonômica Essencial
+Crie um sumário hierárquico enxuto com as Grandes Categorias e Subcategorias que emergem do acervo, focado em criar um índice limpo, rápido e eficiente para o uso diário no software.</textarea>
+
+        <div class="wizard-actions" style="margin-top: 16px;">
+            <button class="chip-btn chip-cancelar" onclick="fecharModalPromptNotebookLM()">Fechar</button>
+            <button class="chip-btn chip-autora" style="background: #2e7d32; color: white; border: none; padding-left: 24px; padding-right: 24px;" onclick="copiarPromptNotebookLM()">📋 Copiar Prompt Mestre</button>
+        </div>
+    </div>
+
+    <!-- MODAL E BACKDROP DO EXTRATOR INTELIGENTE -->
+    <div id="extrator-modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4004;" onclick="cancelarMarcadorExtracao()"></div>
+    <div id="extrator-wizard-popup" class="crop-wizard-popup" style="display:none; z-index: 4005;">
+        <div class="wizard-header">📍 Definir Limite de Extração</div>
+        
+        <p class="popup-label">Vincular a qual Tópico?</p>
+        <select id="extrator-topic-select" class="topic-select"></select>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+            <div>
+                <p class="popup-label">Peça Processual:</p>
+                <select id="extrator-doc-select" class="topic-select">
+                    <option value="sentenca">Decisão Agravada / Sentença</option>
+                    <option value="recurso_autora">Agravo de Instrumento (Autora)</option>
+                    <option value="recurso_re">Agravo de Instrumento (Ré)</option>
+                    <option value="contrarrazões_autora">Contraminuta (Autora)</option>
+                    <option value="contrarrazões_re">Contraminuta (Ré)</option>
+                    <option value="inicial">Recurso Ordinário Trancado</option>
+                </select>
+            </div>
+            <div>
+                <p class="popup-label">Este clique representa o:</p>
+                <select id="extrator-fronteira-select" class="topic-select">
+                    <option value="inicio">🟢 Marco de Início</option>
+                    <option value="fim">🔴 Marco de Fim</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="wizard-actions">
+            <button class="chip-btn chip-cancelar" onclick="cancelarMarcadorExtracao()">✕ Cancelar</button>
+            <button class="chip-btn chip-autora" onclick="salvarMarcadorExtracao()">✔ Fixar Alfinete</button>
+        </div>
+    </div>
+
+    <!-- MODAL EXPORTAÇÃO AVANÇADA (HUB RAG) -->
+    <div id="export-avancado-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.40); z-index: 4010;" onclick="ExportManager.fecharPainelExportacao()"></div>
+
+    <div id="modal-exportacao-avancada" class="crop-wizard-popup" style="display:none; z-index: 4011; max-width: 600px; width: 90vw;">
+        <div class="wizard-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="display: flex; align-items: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Hub de Exportação de Contexto (IA)
+            </span>
+            <button style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;" onclick="ExportManager.fecharPainelExportacao()">✕</button>
+        </div>
+        
+        <p class="popup-label" style="margin-top: 12px;">Selecione os documentos para compor a base de conhecimento:</p>
+        
+        <div id="export-options-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-height: 40vh; overflow-y: auto; padding-right: 4px;"></div>
+
+        <div class="wizard-actions" style="margin-top: 16px;">
+            <button class="chip-btn chip-cancelar" onclick="ExportManager.fecharPainelExportacao()">Cancelar</button>
+            <button id="btn-gerar-arquivo-exportacao" class="chip-btn chip-autora" style="background: var(--trt-blue); color: white; border: none; padding-left: 24px; padding-right: 24px;" onclick="ExportManager.gerarExportacaoPersonalizada()">
+                📥 Gerar Arquivo Exportação
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE AUTENTICAÇÃO E ACERVO -->
+    <script type="module" src="js/ai_firebase-auth.js"></script>
+    <script type="module" src="js/ai_firebase-acervo.js"></script>
+</body>
+</html>

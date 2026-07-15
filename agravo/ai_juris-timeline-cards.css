@@ -1,0 +1,848 @@
+/* ================================================
+   JURIS TIMELINE & CARDS CSS
+   Fichário, Mapa Mental, Cards, Fases e Acervo
+   ================================================ */
+
+/* ================================================
+   1. FICHÁRIO E SISTEMA DE ABAS INTERNAS
+   ================================================ */
+#history-container { flex: 1; overflow: auto; padding: 20px 24px; display: none; }
+.topics-tab-bar { display: flex; flex-wrap: wrap; margin-bottom: 0; padding-top: 4px; }
+.topic-tab-btn { padding: 8px 12px; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); border-bottom: none; margin-right: 4px; margin-bottom: -3px; color: #2c2c2c; border-radius: 6px 6px 0 0; font-size: 0.85rem; font-weight: 500; transition: filter 0.2s, transform 0.1s; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
+.topic-tab-btn:hover:not(.active) { filter: brightness(0.95); }
+.topic-tab-btn.active { font-weight: 800; color: #000; z-index: 5; padding-bottom: 12px; box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.4); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.topics-content-area { padding: 18px 8px; overflow-y: auto; border-radius: 0 6px 6px 6px; min-height: 200px; position: relative; z-index: 2; background-color: var(--notes-bg-color); transition: background-color 0.3s ease; }
+.empty-state { text-align: center; color: #aab; font-size: 0.88rem; line-height: 1.7; margin-top: 40px; padding: 0 20px; }
+.empty-state strong { color: var(--trt-blue-mid); font-size: 1.1rem; }
+
+.thesis-summary-panel { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 16px 16px; background: transparent; border-bottom: none; border-radius: 0; margin-bottom: 16px; }
+.thesis-badge { position: relative; overflow: hidden; display: inline-flex; border-radius: 16px; padding: 2px; cursor: pointer; background: transparent; border: none; width: 100%; }
+.thesis-badge-inner { position: relative; z-index: 1; display: flex; gap: 6px; background: white; border-radius: 14px; padding: 10px 14px; align-items: flex-start; width: 100%; border: 1px solid #dde3ea; font-size: 0.85rem; font-weight: 500; color: var(--trt-blue); text-align: left; transition: all 0.2s ease; }
+.thesis-badge:hover .thesis-badge-inner { background: #f0f4f8; border-color: var(--trt-blue-mid); }
+.thesis-badge-inner .num { background: #1a1a1a; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.75rem; flex-shrink: 0; margin-top: 2px; }
+.texto-tese { line-height: 1.5; word-break: break-word; }
+
+.topic-accordion { background: white; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 12px; box-shadow: var(--shadow-sm); overflow: hidden; }
+.topic-header { padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--trt-light-bg); font-weight: 600; color: var(--trt-blue); border-left: 6px solid var(--trt-blue-mid); transition: background 0.2s; user-select: none; }
+.topic-header:hover { background: #e8ecef; }
+.topic-content { padding: 0; max-height: 0; overflow: hidden; transition: max-height 0.25s ease, padding 0.25s ease; border-top: 0px solid var(--border-color); }
+.topic-content.open { max-height: 4000px; padding: 16px; border-top-width: 1px; }
+.badge-count { background: var(--trt-blue); color: white; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; min-width: 24px; text-align: center; }
+
+/* ================================================
+   2. TIMELINE VISUAL (MAPA MENTAL)
+   ================================================ */
+.timeline-container { position: relative; padding: 24px 15px 10px; display: flex; flex-direction: column; }
+#connections-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.timeline-item-master { position: relative; z-index: 2; display: flex; gap: 32px; width: 100%; margin-bottom: 112px; align-items: stretch; overflow: visible; }
+.timeline-item-master.align-left { flex-direction: row; }
+.timeline-item-master.align-right { flex-direction: row-reverse; }
+
+.main-card-wrapper { position: relative; width: calc(60% - 16px); flex-shrink: 0; overflow: visible; }
+.sub-annotations-wrapper { display: flex; flex-direction: column; width: calc(40% - 16px); position: relative; overflow: visible; }
+
+.annotation-number-area { position: absolute; left: -15px; top: -15px; display: flex; flex-direction: column; align-items: center; z-index: 3; }
+.timeline-number { width: 42px; height: 42px; background-color: #fff9c4; border: 2px solid var(--notes-marker-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: #424242; box-shadow: var(--shadow-sm); flex-shrink: 0; cursor: pointer; transition: transform 0.15s ease, background-color 0.2s, box-shadow 0.2s, border-color 0.3s ease; }
+.timeline-number:hover { transform: scale(1.15); background-color: #ffe082; box-shadow: var(--shadow-md); }
+.timeline-number:active { transform: scale(0.95); }
+
+.timeline-item { position: relative; width: 70%; z-index: 2; margin-bottom: 0; }
+.timeline-item.align-left { align-self: flex-start; }
+.timeline-item.align-right { align-self: flex-end; }
+.connector-wrapper { width: 100%; height: 48px; z-index: 1; }
+.connector-wrapper svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* ================================================
+   3. CARDS DE ANOTAÇÃO E AGRUPAMENTOS
+   ================================================ */
+.annotation-card { background-color: #ffffff; border: 1px solid var(--border-color); border-radius: 0 12px 12px 12px; padding: 14px 18px; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06); color: var(--text-dark); font-size: 0.9rem; position: relative; z-index: 1; }
+.timeline-item-master.align-right .annotation-card { border-radius: 12px 0 12px 12px; }
+
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 4px; }
+.card-meta { font-size: 0.75rem; color: #888; font-weight: 400; }
+.card-texto { 
+    font-size: 0.88rem; color: #333; line-height: 1.6; font-style: italic; margin-top: 4px; 
+    /* Regras aditivas para truncamento */
+    display: -webkit-box; 
+    -webkit-line-clamp: 15; 
+    -webkit-box-orient: vertical; 
+    overflow: hidden; 
+    max-height: 24em; 
+    position: relative; 
+}
+.card-texto.expanded { 
+    -webkit-line-clamp: unset; 
+    display: block; 
+    overflow-y: auto; 
+    max-height: 450px; 
+    padding-right: 6px; 
+}
+.card-texto.is-truncated:not(.expanded)::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4em;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, var(--theme-bg-white, #ffffff));
+}
+
+/* Herança do gradiente conforme a fase metodológica para camuflagem perfeita */
+.fase-1 .card-texto.is-truncated:not(.expanded)::after { background: linear-gradient(to bottom, transparent, var(--fase-1-bg)); }
+.fase-2 .card-texto.is-truncated:not(.expanded)::after { background: linear-gradient(to bottom, transparent, var(--fase-2-bg)); }
+.fase-3 .card-texto.is-truncated:not(.expanded)::after { background: linear-gradient(to bottom, transparent, var(--fase-3-bg)); }
+.fase-4 .card-texto.is-truncated:not(.expanded)::after { background: linear-gradient(to bottom, transparent, var(--fase-4-bg)); }
+
+.card-imagem { max-width: 100%; border-radius: 6px; margin-top: 10px; border: 1px solid var(--border-color); display: block; }
+.card-comentario { font-size: 0.84rem; color: #444; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-color); line-height: 1.6; }
+.card-comentario strong { color: var(--trt-blue-mid); font-weight: 600; }
+
+.card-actions-bar { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border-color); }
+.card-actions-bar button { background: transparent; border: none; cursor: pointer; color: #888; display: flex; align-items: center; justify-content: center; padding: 4px 6px; border-radius: 4px; transition: all 0.2s; }
+.card-actions-bar button:hover { background: #f0f4f8; color: var(--trt-blue); }
+.card-actions-bar button.delete-btn:hover { background: #ffebee; color: #c62828; }
+.card-actions-bar button svg { width: 14px; height: 14px; pointer-events: none; }
+
+.correlated-item-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; }
+.two-way-arrow-container { display: flex; justify-content: center; align-items: center; padding: 12px 0; color: #888; }
+.two-way-arrow-container svg { width: 20px; height: 20px; transform: translateX(45%); }
+
+.annotation-card.correlated-card { border-radius: 8px; background-color: #fafafa; border-top: 3px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04); width: 100%; position: relative; padding-bottom: 14px; }
+.btn-excluir-correlacionado { position: absolute; bottom: 8px; right: 8px; background: transparent; border: none; color: #bbb; cursor: pointer; transition: color 0.2s; padding: 4px; }
+.btn-excluir-correlacionado:hover { color: #c62828; }
+.btn-excluir-correlacionado svg { width: 16px; height: 16px; }
+
+.correlated-item-wrapper.dragging { opacity: 0.4; transform: scale(0.98); }
+.correlated-item-wrapper.drag-over { border-top: 3px dashed var(--trt-blue-mid) !important; padding-top: 4px; background-color: rgba(26, 58, 92, 0.03); }
+.correlated-drag-handle { cursor: grab; transition: color 0.2s; }
+.correlated-drag-handle:hover { color: var(--trt-blue-mid); }
+.correlated-drag-handle:active { cursor: grabbing; }
+
+.annotation-card:has(.image-resize-wrapper) { width: fit-content; min-width: 280px; max-width: 100%; }
+.image-resize-wrapper { max-width: 100%; height: auto; display: inline-block; resize: both; overflow: hidden; min-width: 150px; min-height: 80px; border: 1px solid var(--border-color); border-radius: 6px; margin-top: 10px; background: #fafafa; }
+.image-resize-wrapper img.card-imagem { width: 100%; height: 100%; object-fit: contain; margin-top: 0; border: none; pointer-events: none; }
+
+.main-card-wrapper.drag-over > .annotation-card { border-top: 3px dashed var(--trt-blue-mid) !important; background-color: rgba(26, 58, 92, 0.03); }
+.master-drag-handle:active { cursor: grabbing !important; }
+
+/* Adaptações de Áudio para o Card (Herdado do Leitor) */
+.card-audio { background: #fdfaf4; border: 1px solid #f2e3c6; padding: 12px; border-radius: 6px; margin-top: 10px; display: flex; align-items: center; gap: 12px; }
+.audio-icon-box { background: #ffe082; color: #d84315; padding: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.audio-icon-box svg { width: 20px; height: 20px; }
+.audio-card-meta { line-height: 1.5; }
+.audio-card-meta strong { color: var(--trt-blue-mid); }
+.audio-card-meta span:not([class]) { font-size: 0.85rem; color: #555; }
+.correlated-card .audio-icon-box { transform: scale(0.85); margin-left: -8px; }
+.audio-time-badge { color: #d84315; font-weight: 600; font-size: 0.85rem; display: inline-block; margin-top: 4px; }
+.correlated-card .audio-time-badge { font-size: 0.8rem; }
+.audio-icon-box.clickable-audio { cursor: pointer; transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease; }
+.audio-icon-box.clickable-audio:hover { transform: scale(1.1); background-color: #ffc107; box-shadow: 0 4px 12px rgba(216, 67, 21, 0.25); color: #bf360c; }
+.audio-icon-box.clickable-audio:active { transform: scale(0.95); }
+.correlated-card .audio-icon-box.clickable-audio:hover { transform: scale(0.935); }
+.correlated-card .audio-icon-box.clickable-audio:active { transform: scale(0.807); }
+
+@media (max-width: 480px) {
+    .timeline-container { padding: 24px 10px 10px; }
+    .timeline-item { width: 90%; align-self: flex-start !important; margin-bottom: 28px; }
+    .connector-wrapper { display: none; }
+}
+
+/* ================================================
+   4. NÓS DE IDEIA (SUB-ANOTAÇÕES) E INTENÇÕES DE IA
+   ================================================ */
+.sub-annotation-item { position: relative; display: flex; align-items: center; }
+.timeline-item-master.align-right .sub-annotation-item { flex-direction: row-reverse; }
+
+.sub-annotation-card { background-color: #fffdf2; border: 1px solid #e8e2c8; border-radius: 8px; padding: 14px 16px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); font-size: 0.85rem; color: #3a3520; line-height: 1.6; position: relative; width: 100%; }
+
+.sub-badge { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; background-color: #1a1a1a; color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; z-index: 3; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.15s ease, background-color 0.2s, box-shadow 0.2s; }
+.sub-badge:hover { transform: scale(1.15); background-color: #333; box-shadow: var(--shadow-md); }
+.sub-badge:active { transform: scale(0.95); }
+.timeline-item-master.align-right .sub-badge { right: auto; left: -10px; }
+
+.sub-badge.has-intent { width: auto; min-width: 28px; border-radius: 14px; padding: 0 8px; gap: 4px; }
+.sub-badge svg.intencao-icon { width: 14px; height: 14px; pointer-events: none; }
+.sub-badge.intencao-comando { background-color: #c62828; border: 2px solid #ffcdd2; color: #fff; }
+.sub-badge.intencao-texto { background-color: #1565c0; border: 2px solid #bbdefb; color: #fff; }
+.sub-badge.intencao-nota { background-color: #616161; border: 2px solid #e0e0e0; color: #fff; }
+.sub-badge.intencao-premissa { background-color: #7b1fa2; border: 2px solid #e1bee7; color: #fff; }
+.sub-badge.intencao-fundamentacao { background-color: #00695c; border: 2px solid #b2dfdb; color: #fff; }
+.sub-badge.intencao-refutacao { background-color: #8B4513; border: 2px solid #DEB887; color: #fff; }
+.sub-badge.intencao-preliminar { background-color: #5d4037; border: 2px solid #d7ccc8; color: #fff; }
+.sub-annotation-item.is-nota-interna { opacity: 0.65; }
+
+/* --- COMPORTAMENTO DA ÁREA DE TEXTO (NÓ DE IDEIAS) --- */
+.sub-text-content { 
+    display: -webkit-box; 
+    -webkit-line-clamp: 10; 
+    -webkit-box-orient: vertical; 
+    overflow: hidden; 
+    line-height: 1.6; 
+    max-height: 16em; 
+    position: relative; /* CRÍTICO: Garante que o ::after fique preso ao texto */
+}
+
+.sub-text-content.expanded { 
+    -webkit-line-clamp: unset; 
+    display: block; 
+    overflow-y: auto; 
+    max-height: 350px; 
+    padding-right: 6px; 
+    margin-right: -6px; 
+}
+
+/* O EFEITO DE FADE-OUT TRANSLÚCIDO */
+.sub-text-content.is-truncated:not(.expanded)::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3.5em;
+    background: linear-gradient(to bottom, rgba(255, 253, 242, 0) 0%, rgba(255, 253, 242, 1) 100%);
+    pointer-events: none;
+}
+
+/* SCROLLBAR CUSTOMIZADA PARA O ESTADO EXPANDIDO */
+.sub-text-content.expanded::-webkit-scrollbar { width: 6px; }
+.sub-text-content.expanded::-webkit-scrollbar-track { background: transparent; }
+.sub-text-content.expanded::-webkit-scrollbar-thumb { background: #d0cabc; border-radius: 4px; }
+
+.btn-expand-text { background: none; border: none; color: var(--trt-blue-mid); font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 10px; display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+.btn-expand-text:hover { background: rgba(37, 82, 127, 0.08); }
+
+.sub-input-panel { width: 90%; margin: 12px auto 0 auto; background: #fafafa; border: 1px dashed #555; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+.sub-input-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.sub-input-btn-icon { background: transparent; border: 1px solid transparent; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #888; transition: all 0.2s ease; }
+.sub-input-btn-icon svg { width: 18px; height: 18px; }
+.sub-input-btn-icon.confirm:hover { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+.sub-input-btn-icon.cancel:hover { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+.btn-add-sub { display: none !important; }
+
+/* Menus de Contexto: Estilos Específicos das Intenções de IA */
+.btn-intent-premissa { color: #7b1fa2; justify-content: flex-start; gap: 8px; width: 100%; font-size: 0.8rem; }
+.btn-intent-premissa svg { stroke: #7b1fa2; }
+.btn-intent-fundamentacao { color: #00695c; justify-content: flex-start; gap: 8px; width: 100%; font-size: 0.8rem; }
+.btn-intent-fundamentacao svg { stroke: #00695c; }
+.btn-intent-refutacao { color: #8B4513; justify-content: flex-start; gap: 8px; width: 100%; font-size: 0.8rem; transition: background 0.2s, color 0.2s; }
+.btn-intent-refutacao svg { stroke: #8B4513; transition: stroke 0.2s; }
+.btn-intent-refutacao:hover { background-color: rgba(139, 69, 19, 0.08); }
+.btn-intent-refutacao:hover svg { stroke: #6B3410; }
+.btn-intent-preliminar { color: #5d4037; justify-content: flex-start; gap: 8px; width: 100%; font-size: 0.8rem; }
+.btn-intent-preliminar svg { stroke: #5d4037; }
+
+/* ================================================
+   5. FASES METODOLÓGICAS E DASHBOARD
+   ================================================ */
+:root {
+    --fase-1-color: #2196F3; --fase-2-color: #4CAF50; --fase-3-color: #9C27B0; --fase-4-color: #FF9800;
+    --fase-1-bg: #E4F3FD;    --fase-2-bg: #EBF6EB;    --fase-3-bg: #F4E7F6;    --fase-4-bg: #FFF4E5;  
+}
+
+.annotation-card.fase-1, .annotation-card.correlated-card.fase-1 { background-color: var(--fase-1-bg); border-left: 4px solid var(--fase-1-color); }
+.annotation-card.fase-2, .annotation-card.correlated-card.fase-2 { background-color: var(--fase-2-bg); border-left: 4px solid var(--fase-2-color); }
+.annotation-card.fase-3, .annotation-card.correlated-card.fase-3 { background-color: var(--fase-3-bg); border-left: 4px solid var(--fase-3-color); }
+.annotation-card.fase-4, .annotation-card.correlated-card.fase-4 { background-color: var(--fase-4-bg); border-left: 4px solid var(--fase-4-color); }
+
+.main-card-wrapper > .annotation-card.fase-1 { border-left: 4px solid var(--fase-1-color); }
+.main-card-wrapper > .annotation-card.fase-2 { border-left: 4px solid var(--fase-2-color); }
+.main-card-wrapper > .annotation-card.fase-3 { border-left: 4px solid var(--fase-3-color); }
+.main-card-wrapper > .annotation-card.fase-4 { border-left: 4px solid var(--fase-4-color); }
+
+.sub-annotation-card.borda-fase-1 { border-color: rgba(33, 150, 243, 0.4); border-left: 5px solid var(--fase-1-color); }
+.sub-annotation-card.borda-fase-2 { border-color: rgba(76, 175, 80, 0.4);  border-left: 5px solid var(--fase-2-color); }
+.sub-annotation-card.borda-fase-3 { border-color: rgba(156, 39, 176, 0.4); border-left: 5px solid var(--fase-3-color); }
+.sub-annotation-card.borda-fase-4 { border-color: rgba(255, 152, 0, 0.4);  border-left: 5px solid var(--fase-4-color); }
+
+.phase-tabs { display: flex; gap: 4px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); }
+.phase-tab-btn { flex: 1; padding: 6px 2px; font-size: 0.72rem; border: none; background: transparent; cursor: pointer; font-weight: 600; color: #888; border-bottom: 3px solid transparent; transition: 0.2s;}
+.phase-tab-btn.active-f1 { color: #2196F3; border-bottom-color: #2196F3; }
+.phase-tab-btn.active-f2 { color: #4CAF50; border-bottom-color: #4CAF50; }
+.phase-tab-btn.active-f3 { color: #9C27B0; border-bottom-color: #9C27B0; }
+.phase-tab-btn.active-f4 { color: #FF9800; border-bottom-color: #FF9800; }
+
+.thesis-badge.mature::after { content: none !important; display: none !important; }
+.thesis-badge.mature::before { content: ''; position: absolute; top: -100%; left: -100%; width: 300%; height: 300%; background: conic-gradient(from 0deg, transparent 70%, rgba(255, 213, 80, 0.9) 85%, white 92%, rgba(255, 213, 80, 0.9) 95%, transparent 100%); animation: spin-glow-mature 2.5s linear infinite; z-index: 0; }
+@keyframes spin-glow-mature { 100% { transform: rotate(360deg); } }
+
+/* ================================================
+   6. PAINEL DE PREÂMBULO (RELATÓRIO FIXO)
+   ================================================ */
+.topic-preamble-panel { display: flex; flex-direction: column; gap: 8px; padding: 16px 24px 0 24px; margin-bottom: 8px; }
+.preamble-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px; display: flex; gap: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.preamble-card:hover { border-color: var(--trt-blue-mid); box-shadow: 0 4px 8px rgba(0,0,0,0.05); transform: translateY(-1px); }
+.preamble-alegacao { border-left: 4px solid #f57c00; }
+.preamble-origem { border-left: 4px solid #3949ab; }
+.preamble-icon { flex-shrink: 0; width: 24px; height: 24px; margin-top: 2px; }
+.preamble-alegacao .preamble-icon { color: #f57c00; }
+.preamble-origem .preamble-icon { color: #3949ab; }
+.preamble-veredito { border-left: 4px solid #e65100; }
+.preamble-veredito .preamble-icon { color: #e65100; }
+.pdf-foco-ativo { filter: blur(4px); opacity: 0.6; pointer-events: none; transition: filter 0.2s ease, opacity 0.2s ease; }
+.preamble-content { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.preamble-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #777; letter-spacing: 0.5px; }
+.preamble-empty { font-size: 0.85rem; color: #aaa; font-style: italic; }
+
+/* ================================================
+   7. COMPONENTES DO ACERVO DE MODELOS E TAGS
+   ================================================ */
+.acervo-item { display: flex; flex-direction: column; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #ffffff; cursor: pointer; transition: all 0.2s ease; margin-bottom: 6px; }
+.acervo-item:hover, .acervo-item.selected { background: var(--trt-light-bg); border-color: var(--trt-blue-mid); }
+.acervo-item-titulo { font-weight: 700; color: var(--trt-blue); font-size: 0.88rem; margin-bottom: 6px; }
+.acervo-node-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: #f0f0f0; color: #555; margin-right: 4px; margin-bottom: 4px; }
+
+.acervo-loader { border: 3px solid rgba(0, 0, 0, 0.1); border-left-color: var(--trt-blue); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 16px auto; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.acervo-node-preview { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eee; }
+.acervo-node-preview:last-child { border-bottom: none; }
+.acervo-node-preview svg { width: 16px; height: 16px; flex-shrink: 0; }
+.acervo-node-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555; font-style: italic; }
+
+#modal-acervo-inserir, #modal-editar-modelo-acervo { width: 80vw; max-width: 900px; }
+#acervo-list-view { display: flex; flex-direction: column; }
+#lista-acervo-geral { max-height: 40vh; flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+#acervo-items-wrapper .acervo-item { content-visibility: auto; }
+.acervo-item-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.acervo-action-btn { background: transparent; border: none; color: #999; cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; transition: all 0.2s ease; }
+.acervo-action-btn:hover { background: #f0f4f8; color: var(--trt-blue); }
+.acervo-action-btn.delete-btn:hover { background: #ffebee; color: #c62828; }
+.acervo-action-btn svg { width: 16px; height: 16px; pointer-events: none; }
+
+.acervo-node-edit-box { display: flex; gap: 8px; align-items: flex-start; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; background: #fafafa; }
+.acervo-node-edit-textarea { flex: 1; min-height: 60px; font-family: inherit; font-size: 0.85rem; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; outline: none; transition: border-color 0.2s; }
+.acervo-node-edit-textarea:focus { border-color: var(--trt-blue-mid); background: white; }
+
+/* Menus de Tags e Chips Neon */
+.tags-dropdown-menu { position: absolute; top: calc(100% + 4px); left: 0; width: 100%; background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 180px; overflow-y: auto; z-index: 100; }
+.tag-dropdown-item { padding: 10px 12px; cursor: pointer; font-size: 0.85rem; color: var(--text-dark); border-bottom: 1px solid #f0f0f0; transition: background-color 0.15s, color 0.15s; }
+.tag-dropdown-item:last-child { border-bottom: none; }
+.tag-dropdown-item:hover { background: var(--trt-light-bg); color: var(--trt-blue); font-weight: 600; }
+.tag-dropdown-item.criar-nova { background-color: #f1f8e9; color: #2e7d32; font-weight: 600; border-top: 1px dashed #c5e1a5; display: flex; align-items: center; gap: 8px; }
+.tag-dropdown-item.criar-nova:hover { background-color: #e8f5e9; color: #1b5e20; }
+
+.chip-remover { cursor: pointer; margin-left: 8px; font-size: 1rem; line-height: 0.8; color: #a0a090; font-weight: bold; transition: color 0.2s, transform 0.1s; }
+.chip-remover:hover { color: #c62828; transform: scale(1.2); }
+.acervo-item-tags-lista { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+:root { 
+    --ed-neon-bg: #D500B5;        /* Fundo Fúcsia elegante (ED) */
+    --ed-neon-stroke: #A3008A;    /* Borda sutil fúcsia escurecida para profundidade */
+    --ed-neon-text: #FFFFFF;      /* Branco para contraste perfeito na leitura */
+}
+
+/* Novo Botão do Acervo (Cor Fúcsia com traçados Brancos) */
+.tag-btn-ed { 
+    background-color: var(--ed-neon-bg); 
+    border: 1px solid var(--ed-neon-stroke); 
+    color: var(--ed-neon-text); /* Garante que o SVG (traçados) herde o branco */
+    transition: background-color 0.2s;
+}
+.tag-btn-ed:hover {
+    background-color: #E600C4; /* Tom ligeiramente mais claro no hover */
+}
+
+/* Modificação dos Chips (Tags) dentro do painel de Acervo para usarem Fúcsia */
+.acervo-tag-chip { 
+    background-color: var(--ed-neon-bg); 
+    color: var(--ed-neon-text); 
+    padding: 3px 10px; 
+    border-radius: 12px; 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    border: 1px solid var(--ed-neon-stroke); 
+    display: inline-flex; 
+    align-items: center; 
+}
+
+.acervo-node-edit-box .svg-icon-wrapper.sub-badge.modal-static-badge { position: static; box-shadow: none; transform: none; cursor: default; align-self: flex-start; margin-top: 4px; width: auto; min-width: 28px; border-radius: 14px; padding: 2px 8px; display: flex; align-items: center; justify-content: center; }
+.acervo-node-edit-box .svg-icon-wrapper.modal-static-badge svg { margin: 0; stroke: currentColor !important; fill: none !important; }
+
+#modal-gerenciar-tags .wizard-header + div { display: flex; gap: 8px; align-items: center; }
+#input-nova-tag { flex: 1; }
+
+/* ================================================
+   8. CUSTOMIZAÇÃO DE WORKSPACE (CONTEXTO)
+   ================================================ */
+/* Aplicação de identidade institucional discreta e sóbria para o workspace de Embargos */
+body[data-context="ed"] .topics-content-area {
+    border-top: 3px solid #1a3a5c;
+    background-color: #fdfdfd;
+}
+
+/* Tipografias customizadas para renderização do Markdown tratado */
+.txt-largo-1 { font-size: 1.1rem; font-weight: 600; color: #1a1a1a; }
+.txt-largo-2 { font-size: 1.25rem; font-weight: 700; color: #1a3a5c; }
+
+/* --- DIRETRIZES DA IA (ESTRUTURA VISUAL UNIFICADA) --- */
+.timeline-item-master.nivel-hierarquico { 
+    margin-bottom: 24px; 
+    position: relative;
+    z-index: 10;
+}
+
+/* Formatação base do Ícone (Idêntico ao RO e ED) */
+.timeline-icon-box {
+    width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-sm); flex-shrink: 0; color: #ffffff; z-index: 2;
+}
+.timeline-icon-box svg { width: 18px; height: 18px; }
+
+/* === DIRETRIZES GLOBAIS === */
+.nivel-global .timeline-icon-box { background-color: #0f253d; }
+.nivel-global .annotation-card { border-left: 4px solid #0f253d; background-color: #274b72; color: #ffffff; }
+.nivel-global .hierarquia-titulo { color: #ffffff; font-weight: bold; font-size: 0.95rem; }
+.nivel-global .card-actions-bar button { color: #aab8c5; }
+.nivel-global .card-actions-bar button:hover { background: rgba(255, 255, 255, 0.15); color: #ffffff; }
+
+/* Nós (sub-anotações) da Diretriz Global */
+.sub-annotation-card.borda-global {
+    border-color: rgba(39, 75, 114, 0.4);
+    border-left: 5px solid #0f253d;
+}
+
+/* === ÓBICE DE ADMISSIBILIDADE (Equivalente à TESE) === */
+.nivel-tese .hierarquia-titulo { font-weight: bold; font-size: 0.95rem; }
+
+/* ================================================
+   9. MODO ZEN E TRANSIÇÕES DE ESTADO
+   ================================================ */
+
+/* 1. Transição BIDIRECIONAL na raiz dos elementos para suavidade na entrada e saída */
+.sub-annotation-item,
+.main-card-wrapper,
+.thesis-summary-panel,
+.topic-preamble-panel {
+    transition: top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                opacity 0.3s ease, 
+                filter 0.3s ease;
+}
+
+/* 2. Ocultação elegante do entorno no Zen Mode (apenas altera opacidade e filtro) */
+#topics-tab-content.zen-mode-ativo .sub-annotation-item:not(.is-zen-focused),
+#topics-tab-content.zen-mode-ativo .main-card-wrapper:not(.is-zen-focused),
+#topics-tab-content.zen-mode-ativo .thesis-summary-panel,
+#topics-tab-content.zen-mode-ativo .topic-preamble-panel {
+    opacity: 0.15;
+    filter: blur(2px);
+    pointer-events: none;
+}
+
+#topics-tab-content.zen-mode-ativo .main-card-wrapper.is-zen-focused {
+    opacity: 1 !important;
+    filter: none !important;
+    pointer-events: auto !important;
+    z-index: 10;
+}
+
+.main-card-wrapper.is-zen-focused > .annotation-card {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    transform: scale(1.02);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-color: var(--trt-blue-mid) !important;
+}
+
+/* 3. Destaque e elevação do card focado */
+.sub-annotation-card.zen-focused {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    transform: scale(1.02);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-color: var(--trt-blue-mid) !important;
+    z-index: 10; 
+}
+
+/* 4. Botão de Cópia: Exibição Condicional NATIVA pelo CSS */
+.btn-copiar-zen {
+    display: none; /* Invisível por padrão */
+    background: rgba(26, 58, 92, 0.08);
+    color: var(--trt-blue);
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-left: 8px;
+    transition: background 0.2s, transform 0.1s;
+}
+.btn-copiar-zen:hover { background: rgba(26, 58, 92, 0.15); }
+.btn-copiar-zen:active { transform: scale(0.95); }
+
+/* Exibe o botão apenas quando o Zen Mode está ativo neste card */
+.zen-focused .btn-copiar-zen {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ================================================
+   CRONÔMETRO DE EFICIÊNCIA (TIME TRACKER)
+   ================================================ */
+#efficiency-tracker-container {
+    position: sticky;
+    top: 18px;
+    z-index: 1000;
+    height: 0;         /* Impede impacto no layout dos cards abaixo */
+    overflow: visible; /* Permite que a pílula apareça mesmo com height 0 */
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start; /* Impede esmagamento via Flexbox */
+    margin-right: 24px;
+    pointer-events: none; /* Deixa cliques atravessarem o container fantasma */
+}
+
+#efficiency-tracker-pill {
+    position: relative;
+    pointer-events: auto; /* Reativa cliques apenas no botão */
+    border-radius: 20px;
+    padding: 2px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    user-select: none;
+    overflow: hidden; /* Corta a sobra da animação quadrada do fundo */
+    background: transparent;
+    --tracker-color: #ccc; /* Variável injetada via JS */
+}
+
+#efficiency-tracker-pill:hover { transform: translateY(-2px) scale(1.02); }
+#efficiency-tracker-pill:active { transform: translateY(0) scale(0.98); }
+
+#tracker-bg-mask {
+    position: absolute;
+    inset: 2px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 18px;
+    z-index: 1;
+}
+
+.tracker-content {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+}
+
+#efficiency-tracker-dot {
+    width: 8px; height: 8px; border-radius: 50%; background-color: #ccc;
+    transition: background-color 0.4s ease, box-shadow 0.4s ease;
+}
+#efficiency-tracker-dot.pulsing { animation: tracker-pulse 2s infinite ease-in-out; }
+
+#efficiency-tracker-time {
+    font-size: 0.75rem; font-weight: 700; color: #555;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.5px;
+}
+
+/* ------------------------------------------------
+   EFEITOS DE ESTRELAS CADENTES (MARCOS DE TEMPO)
+   ------------------------------------------------ */
+#efficiency-tracker-pill::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 160px; /* Quadrado fixo para garantir gradiente circular perfeito */
+    height: 160px;
+    background: transparent;
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+/* Marco 1: Uma estrela cadente */
+#efficiency-tracker-pill.milestone-1::before {
+    opacity: 1;
+    background: conic-gradient(from 0deg, transparent 70%, var(--tracker-color) 95%, transparent 100%);
+    animation: spin-tracker-1 3s linear infinite;
+}
+
+/* Marco 2: Duas estrelas cadentes */
+#efficiency-tracker-pill.milestone-2::before {
+    opacity: 1;
+    background: conic-gradient(from 0deg, transparent 20%, var(--tracker-color) 45%, transparent 70%, var(--tracker-color) 95%, transparent 100%);
+    animation: spin-tracker-2 2s linear infinite;
+}
+
+/* Marco 3: Três estrelas cadentes + borda grossa (Alerte de Prazo) */
+#efficiency-tracker-pill.milestone-3 { padding: 3px; }
+#efficiency-tracker-pill.milestone-3 #tracker-bg-mask { inset: 3px; }
+#efficiency-tracker-pill.milestone-3::before {
+    opacity: 1;
+    background: conic-gradient(from 0deg, transparent 10%, var(--tracker-color) 30%, transparent 43%, var(--tracker-color) 63%, transparent 76%, var(--tracker-color) 96%, transparent 100%);
+    animation: spin-tracker-3 1.2s linear infinite;
+}
+
+@keyframes spin-tracker-1 { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes spin-tracker-2 { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes spin-tracker-3 { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+@keyframes tracker-pulse {
+    0%, 100% { transform: scale(0.9); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Chave Seletora (Toggle) Minimalista */
+.toggle-switch-minimal {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 18px;
+}
+.toggle-switch-minimal input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc; transition: .3s; border-radius: 18px;
+}
+.toggle-slider:before {
+    position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
+    background-color: white; transition: .3s; border-radius: 50%;
+}
+.toggle-switch-minimal input:checked + .toggle-slider { background-color: var(--trt-blue); }
+.toggle-switch-minimal input:checked + .toggle-slider:before { transform: translateX(14px); }
+
+/* ================================================
+   ESTILOS DE NOTA OCULTA (O POST-IT) E TRACKER FLUTUANTE (LÂMPADA)
+   ================================================ */
+.sub-annotation-item.is-nota-interna {
+    opacity: 1 !important; /* Desfaz a opacidade padrão de notas antigas */
+}
+
+/* Identidade visual de papel/rascunho (Modo Escuro) */
+.sub-annotation-item.is-nota-interna .sub-annotation-card {
+    background-color: #2d3748; /* Cinza escuro (Slate) distinto da tag */
+    border: 2px dashed #4a5568;
+    border-left: 4px dashed #718096; 
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+    transform: rotate(-0.5deg);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    padding-bottom: 44px; /* NOVO: Zona segura para o botão flutuante não colar no texto */
+}
+
+/* Tipografia diferenciada (Branco suave) */
+.sub-annotation-item.is-nota-interna .sub-text-content {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-style: italic;
+    color: #f8f9fa; /* Fonte branca amena para não cansar a vista */
+}
+
+/* Gradiente de Fade-out acompanhando o fundo escuro */
+.sub-annotation-item.is-nota-interna .sub-text-content.is-truncated:not(.expanded)::after {
+    background: linear-gradient(to bottom, transparent, #2d3748);
+}
+
+/* Ajuste de Contraste para botões no fundo escuro */
+.sub-annotation-item.is-nota-interna .btn-expand-text,
+.sub-annotation-item.is-nota-interna .btn-copiar-zen {
+    color: #90cdf4;
+}
+.sub-annotation-item.is-nota-interna .btn-copiar-zen:hover {
+    background: rgba(144, 205, 244, 0.15);
+}
+
+/* ================================================
+   NOVO: Botão de Revisão da Nota Oculta (Tracking)
+   ================================================ */
+.btn-revisao-nota {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.25s ease;
+    z-index: 5;
+    background: rgba(255, 255, 255, 0.05); /* Sutil para o dark mode */
+}
+
+.btn-revisao-nota svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Status: Pendente (Traço - Indica falta de revisão) */
+.btn-revisao-nota.pendente {
+    color: #a0aec0;
+    border-color: rgba(160, 174, 192, 0.3);
+}
+.btn-revisao-nota.pendente:hover {
+    background: rgba(160, 174, 192, 0.2);
+    color: #cbd5e0;
+    transform: scale(1.1);
+}
+
+/* Status: Revisado (Check verde) */
+.btn-revisao-nota.revisada {
+    color: #48bb78; 
+    border-color: rgba(72, 187, 120, 0.3);
+    background: rgba(72, 187, 120, 0.1);
+}
+.btn-revisao-nota.revisada:hover {
+    background: rgba(72, 187, 120, 0.2);
+    transform: scale(1.1);
+}
+
+/* Feedback Visual de Conclusão: Esmaecimento do texto para limpeza visual */
+.sub-annotation-item.is-nota-interna.is-revisada .sub-text-content {
+    opacity: 0.45;
+    transition: opacity 0.3s ease;
+}
+
+/* Composição de Transform no Modo Zen (com borda amarela para destaque) */
+.sub-annotation-item.is-nota-interna .sub-annotation-card.zen-focused {
+    transform: rotate(-0.5deg) scale(1.02); /* Mantém inclinação + zoom */
+    border-color: #fbbf24;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), 4px 4px 0px rgba(0, 0, 0, 0.15);
+}
+
+/* ================================================
+   ESTILOS DO TRACKER FLUTUANTE (LÂMPADA)
+   ================================================ */
+.floating-lamp-tracker {
+    position: relative;
+    background: #ffffff;
+    border: 2px solid #ffb300;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    color: #ffb300;
+    pointer-events: auto;
+}
+
+.floating-lamp-tracker:hover {
+    transform: translateY(-2px) scale(1.05);
+    background: #fffdf0;
+}
+
+.floating-lamp-tracker:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.floating-lamp-tracker .lamp-icon svg { width: 18px; height: 18px; }
+
+.floating-lamp-tracker .task-badge {
+    top: -4px;
+    right: -4px;
+    background-color: #7a8b9e;
+    border-color: #ffffff;
+}
+
+/* ==========================================
+   ESTILOS: RECOMENDAÇÃO DE IA NO ACERVO E UI
+   ========================================== */
+@keyframes ai-pulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(245,124,0,0)); }
+    100% { transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(245,124,0,0.5)); }
+}
+
+.ai-trigger-btn.is-thinking svg path:first-child { display: none; }
+.ai-trigger-btn.is-thinking .ai-sparkle { display: block !important; stroke: #f57f17; animation: ai-pulse 0.8s infinite alternate; }
+
+.banner-ia-filter { display: flex; align-items: center; justify-content: space-between; background: #fff8e1; border: 1px solid #ffe082; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
+.banner-ia-text { font-size: 0.85rem; color: #f57f17; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.banner-ia-text svg { width: 16px; height: 16px; }
+.btn-limpar-ia { background: white; border: 1px solid #ffe082; color: #f57f17; font-size: 0.75rem; padding: 4px 10px; cursor: pointer; transition: 0.2s; }
+.btn-limpar-ia:hover { background: #ffe082; color: #e65100; }
+
+.acervo-item.ai-recommended {
+    border-left: 4px solid #f57f17;
+    background-image: linear-gradient(to right, rgba(255, 248, 225, 0.4), #ffffff);
+}
+.acervo-item.ai-recommended .acervo-item-titulo { color: #e65100; }
+
+.acervo-item.ai-recommended:hover, 
+.acervo-item.ai-recommended.selected {
+    background-image: none;
+    background-color: var(--trt-light-bg);
+    border-color: var(--trt-blue-mid);
+}
+.acervo-item.ai-recommended.selected .acervo-item-titulo { color: var(--trt-blue); }
+
+/* ==========================================
+   ACERVO: ARQUITETURA DE VIEW SWAP E FULLSCREEN
+   ========================================== */
+   
+/* Transições de View (Opacidade e GPU) */
+#acervo-list-view,
+#acervo-focus-view {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    will-change: opacity, transform;
+}
+
+#acervo-focus-view {
+    transform: translateY(10px);
+}
+#acervo-focus-view.is-active {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: translateY(0);
+}
+
+/* Modificadores do Box de Preview no Modo Normal */
+#box-preview-acervo {
+    max-height: 35vh;
+}
+.acervo-node-text.wrap-text {
+    white-space: normal;
+    line-height: 1.5;
+    display: block;
+    margin-top: 2px;
+}
+
+/* --- MODO TELA CHEIA (FULLSCREEN CORRIGIDO) --- */
+/* 1. Expande o Modal inteiro para ocupar 90% da tela */
+#modal-acervo-inserir.is-fullscreen {
+    width: 90vw !important;
+    height: 90vh !important;
+    max-width: 1400px !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* 2. Força a view de foco a ocupar todo o espaço vertical disponível do modal */
+#modal-acervo-inserir.is-fullscreen #acervo-focus-view {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; 
+}
+
+/* 3. Oculta de forma inteligente tudo que NÃO for a caixa de leitura */
+#modal-acervo-inserir.is-fullscreen #acervo-focus-view > div:not(#box-preview-container) {
+    display: none !important;
+}
+
+/* 4. A caixa de leitura ganha 100% de destaque */
+#modal-acervo-inserir.is-fullscreen #box-preview-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+/* 5. A área de texto cresce flexivelmente ocupando o máximo da tela */
+#modal-acervo-inserir.is-fullscreen #box-preview-acervo {
+    flex: 1;
+    max-height: none !important;
+    height: 100%;
+    overflow-y: auto;
+}
